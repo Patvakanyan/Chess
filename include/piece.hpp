@@ -10,22 +10,17 @@ class Piece
 {
 protected:
 	Color color;
-	Position position;
 
 public:
 	Piece() = delete;
-	Piece(Color color, Position position);
+	Piece(Color color);
 	virtual ~Piece() = default;
 
 	Piece(const Piece &other) = default;
 	Piece &operator=(const Piece &other) = default;
 
 	Color getColor() const;
-	Position getPosition() const;
-	void setPosition(Position newPosition);
+	bool isValidMove(const Position currentPosition,const Position newPosition, const Board &board) const;
 
-	virtual void move(Position newPosition) = 0;
-
-	virtual bool isValidMove(Position newPosition, const Board &board) const = 0;
-	virtual std::vector<Position> getValidMoves(const Board &board) const = 0;
+	virtual std::vector<Position> getValidMoves(const Position currentPosition, const Board &board) const = 0;
 };

@@ -1,24 +1,17 @@
 #pragma once
 
-#include <vector>
-#include <stdexcept>
-
-
 class Position
 {
 private:
-	int x;
-	int y;
+	int row_;
+	int column_;
 
 public:
-	Position();
-	Position(int x, int y);
-	Position(const Position &other);
-	Position &operator=(const Position &other) = default;
-	~Position() = default;
+	Position(int row = 0, int column = 0);
 
 	int getX() const;
 	int getY() const;
-	Position operator+(const Position &other) const;
-	Position operator-(const Position &other) const;
+
+	bool operator==(const Position &other) const;
+	bool operator!=(const Position &other) const;
 };

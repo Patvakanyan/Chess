@@ -1,31 +1,26 @@
 #include "../include/position.hpp"
 
-Position::Position() : x(0), y(0) {}
-
-Position::Position(int x, int y) {
-	if (x < 0 || x > 7 || y < 0 || y > 7) {
-		throw std::out_of_range("Position coordinates must be between 0 and 7.");
-	}
-	this->x = x;
-	this->y = y;
+Position::Position(int row, int column)
+	: row_(row), column_(column)
+{
 }
 
 int Position::getX() const
 {
-	return x;
+	return row_;
 }
 
 int Position::getY() const
 {
-	return y;
+	return column_;
 }
 
-Position Position::operator+(const Position &other) const
+bool Position::operator==(const Position &other) const
 {
-	return Position(x + other.x, y + other.y);
+	return row_ == other.row_ && column_ == other.column_;
 }
 
-Position Position::operator-(const Position &other) const
+bool Position::operator!=(const Position &other) const
 {
-	return Position(x - other.x, y - other.y);
+	return !(*this == other);
 }

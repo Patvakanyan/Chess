@@ -1,18 +1,26 @@
 #include "../include/piece.hpp"
 
-Piece::Piece(Color color, Position position) : color(color), position(position) {}
+Piece::Piece(Color color) : color(color) {}
 
 Color Piece::getColor() const
 {
 	return color;
 }
 
-Position Piece::getPosition() const
+bool Piece::isValidMove(const Position currentPosition,const Position newPosition, const Board &board) const
 {
-	return position;
+	if (currentPosition == newPosition)
+	{
+		return false;
+	}
+	for (const Position &pos : getValidMoves(currentPosition, board))
+	{
+		if (pos == newPosition)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
-void Piece::setPosition(Position newPosition)
-{
-	position = newPosition;
-}
+
