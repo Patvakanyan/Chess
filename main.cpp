@@ -1,10 +1,12 @@
 #include "include/board.hpp"
 #include "include/game.hpp"
+#include "include/terminal.hpp"
 
 int main()
 {
 	Game game;
-	game.startGame(Color::White);
-	game.printBoard();
+	Terminal terminal(game);
+	terminal.start();
+	
 	return 0;
 }

@@ -24,3 +24,11 @@ bool Piece::isValidMove(const Position currentPosition,const Position newPositio
 }
 
 
+void Piece::setHasMoved(bool hasMoved)
+{
+	hasMoved_ = hasMoved;
+}
+bool Piece::getHasMoved() const
+{
+	return hasMoved_;
+}

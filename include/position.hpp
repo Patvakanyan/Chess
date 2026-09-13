@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdexcept>
+#include <string>
 class Position
 {
 private:
@@ -8,7 +10,7 @@ private:
 
 public:
 	Position(int row = 0, int column = 0);
-
+	Position(const std::string &position);
 	int getX() const;
 	int getY() const;
 

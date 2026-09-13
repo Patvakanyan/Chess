@@ -27,12 +27,15 @@ private:
 
 public:
 	Game();
+	Game(const Game &other) = default;
+	Game &operator=(const Game &other) = default;
+	Game(Game &&other) = default;
+	Game &operator=(Game &&other) = default;
 
 	void startGame(Color selectedColor);
 	void makeMove(const Position &from, const Position &to);
 	bool isCheckmate(Color color) const;
 	bool isStalemate(Color color) const;
 	Color getCurrentTurn() const;
-
 	void printBoard() const;
 };

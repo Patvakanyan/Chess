@@ -1,6 +1,6 @@
 #include "../include/pawn.hpp"
 
-Pawn::Pawn(Color color) : Piece(color), hasMoved_(false) {}
+Pawn::Pawn(Color color) : Piece(color) {}
 
 std::vector<Position> Pawn::getValidMoves(const Position currentPosition, const Board &board) const
 {
@@ -33,7 +33,3 @@ std::vector<Position> Pawn::getValidMoves(const Position currentPosition, const 
 	return validMoves;
 }
 
-void Pawn::setHasMoved(bool hasMoved)
-{
-	hasMoved_ = hasMoved;
-}

@@ -1,6 +1,5 @@
 #include "../include/king.hpp"
-
-King::King(Color color) : Piece(color) {}
+ King::King(Color color) : Piece(color) {}
 
 std::vector<Position> King::getValidMoves(const Position currentPosition, const Board &board) const
 {
@@ -38,3 +37,4 @@ std::vector<Position> King::getValidMoves(const Position currentPosition, const 
 	}
 	return validMoves;
 }
+

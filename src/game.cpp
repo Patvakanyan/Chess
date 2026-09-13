@@ -2,7 +2,6 @@
 
 Game::Game() : currentTurn_(Color::White), gameOver_(false)
 {
-	board_.initializeBoard();
 }
 
 void Game::prepareBoard()
@@ -95,4 +94,29 @@ void Game::printBoard() const
 	}
 
 	std::cout << "  a b c d e f g h\n";
+}
+
+void Game::makeMove(const Position &from, const Position &to)
+{
+	if (gameOver_)
+	{
+		throw std::runtime_error("Game is over. No more moves can be made.");
+	}
+	board_.movePiece(from, to);
+	currentTurn_ = (currentTurn_ == Color::White) ? Color::Black : Color::White;
+}
+
+bool Game::isCheckmate(Color) const
+{
+	return false;
+}
+
+bool Game::isStalemate(Color) const
+{
+	return false;
+}
+
+Color Game::getCurrentTurn() const
+{
+	return currentTurn_;
 }

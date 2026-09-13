@@ -70,7 +70,11 @@ void Board::movePiece(const Position &from, const Position &to)
 	{
 		throw std::invalid_argument("No piece at the source position.");
 	}
-
+	if (pieceToMove->isValidMove(from, to, *this))
+	{
+		throw std::invalid_argument("Invalid move for the selected piece.");
+	}
+	pieceToMove->setHasMoved(true);
 	toSquare->setPiece(pieceToMove);
 	fromSquare->setPiece(nullptr);
 }
