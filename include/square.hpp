@@ -12,10 +12,10 @@ private:
 
 public:
 	Square(Piece *piece = nullptr, Color color = Color::Black);
+	~Square();
 
 	Square(const Square &other) = delete;
 	Square &operator=(const Square &other) = default;
-	~Square() = default;
 
 	Piece *getPiece() const;
 	void setPiece(Piece *piece);

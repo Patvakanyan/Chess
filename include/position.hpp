@@ -14,6 +14,7 @@ public:
 	int getX() const;
 	int getY() const;
 
+	std::string toString() const;
 	bool operator==(const Position &other) const;
 	bool operator!=(const Position &other) const;
 };

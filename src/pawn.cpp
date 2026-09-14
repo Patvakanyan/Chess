@@ -7,29 +7,32 @@ std::vector<Position> Pawn::getValidMoves(const Position currentPosition, const 
 	std::vector<Position> validMoves;
 	int currentX = currentPosition.getX();
 	int currentY = currentPosition.getY();
-	int direction = (this->getColor() == Color::White) ? 1 : -1;
+	int direction = (this->getColor() == Color::White) ? -1 : 1;
 
-	if (currentY + direction >= 0 && currentY + direction < 8 && board[currentX][currentY + direction].isEmpty())
+	int nextRow = currentX + direction;
+	if (nextRow >= 0 && nextRow < 8 && board[nextRow][currentY].isEmpty())
 	{
-		validMoves.emplace_back(currentX, currentY + direction);
+		validMoves.emplace_back(nextRow, currentY);
 	}
-
-	if (!hasMoved_ && currentY + 2 * direction >= 0 && currentY + 2 * direction < 8 && board[currentX][currentY + 2 * direction].isEmpty() && board[currentX][currentY + direction].isEmpty())
+	auto a = board[nextRow][currentY].isEmpty();
+	(void)a; // Suppress unused variable warning
+	int twoStepRow = currentX + 2 * direction;
+	if (!hasMoved_ && twoStepRow >= 0 && twoStepRow < 8 && board[nextRow][currentY].isEmpty() && board[twoStepRow][currentY].isEmpty())
 	{
-		validMoves.emplace_back(currentX, currentY + 2 * direction);
+		validMoves.emplace_back(twoStepRow, currentY);
 	}
 
 	for (int dx : {-1, 1})
 	{
-		int newX = currentX + dx;
-		if (newX >= 0 && newX < 8 && currentY + direction >= 0 && currentY + direction < 8)
+		int newColumn = currentY + dx;
+		int newRow = currentX + direction;
+		if (newRow >= 0 && newRow < 8 && newColumn >= 0 && newColumn < 8)
 		{
-			if (!board[newX][currentY + direction].isEmpty() && board[newX][currentY + direction].getPiece()->getColor() != getColor())
+			if (!board[newRow][newColumn].isEmpty() && board[newRow][newColumn].getPiece()->getColor() != getColor())
 			{
-				validMoves.emplace_back(newX, currentY + direction);
+				validMoves.emplace_back(newRow, newColumn);
 			}
 		}
 	}
 	return validMoves;
 }
-

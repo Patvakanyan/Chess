@@ -12,13 +12,14 @@
 #include "./pawn.hpp"
 #include <iostream>
 #include <vector>
-
-
+#include "moveHistory.hpp"
 
 class Game
 {
 private:
 	Board board_;
+	MoveHistory moveHistory_;
+
 	Color currentTurn_;
 	Color selectedColor_;
 	bool gameOver_;
@@ -31,7 +32,7 @@ public:
 	Game &operator=(const Game &other) = default;
 	Game(Game &&other) = default;
 	Game &operator=(Game &&other) = default;
-
+	~Game() = default;
 	void startGame(Color selectedColor);
 	void makeMove(const Position &from, const Position &to);
 	bool isCheckmate(Color color) const;

@@ -4,6 +4,15 @@ Square::Square(Piece *piece, Color color) : piece_(piece), color_(color)
 {
 }
 
+Square::~Square()
+{
+	if (piece_ != nullptr)
+	{
+		delete piece_;
+		piece_ = nullptr;
+	}
+}
+
 Piece *Square::getPiece() const
 {
 	return piece_;

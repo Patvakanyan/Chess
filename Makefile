@@ -1,35 +1,34 @@
-CXX ?= c++
-CPPFLAGS ?= -Iinclude
-CXXFLAGS ?= -std=c++17 -Wall -Wextra -Wpedantic
+NAME = chess
+OBJ_DIR = obj
 
-BUILD_DIR := build
-APP := $(BUILD_DIR)/chess
-TEST_APP := $(BUILD_DIR)/test_chess
-SOURCES := main.cpp $(wildcard src/*.cpp)
-TESTS := $(wildcard tests/*.cpp)
+CXX = c++
+CPPFLAGS = -Iinclude
+CXXFLAGS = -Wall -Wextra -Werror -std=c++17 -g3
 
-.PHONY: all run test clean
+SRC = main.cpp $(wildcard src/*.cpp)
+OBJ = $(OBJ_DIR)/main.o $(patsubst src/%.cpp,$(OBJ_DIR)/%.o,$(wildcard src/*.cpp))
 
-all: $(APP)
+all: $(NAME)
 
-$(APP): $(SOURCES)
-	mkdir -p $(BUILD_DIR)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@
+$(NAME): $(OBJ)
+	$(CXX) $(OBJ) -o $@
 
-run: $(APP)
-	./$(APP)
+$(OBJ_DIR)/%.o: %.cpp
+	@mkdir -p $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-ifneq ($(strip $(TESTS)),)
-test: $(TEST_APP)
+$(OBJ_DIR)/%.o: src/%.cpp
+	@mkdir -p $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-$(TEST_APP): $(filter-out main.cpp,$(SOURCES)) $(TESTS)
-	mkdir -p $(BUILD_DIR)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@
-	./$(TEST_APP)
-else
-test:
-	@printf '%s\n' 'No tests have been added yet.'
-endif
+run: $(NAME)
+	./$(NAME)
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(OBJ_DIR) $(NAME)
+
+fclean: clean
+
+re: fclean all
+
+.PHONY: all run clean fclean re

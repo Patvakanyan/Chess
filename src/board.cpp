@@ -14,7 +14,7 @@ bool Board::isValidPosition(const Position &position) const
 {
 	int x = position.getX();
 	int y = position.getY();
-	return (x >= 0 && x < 8 && y >= 0 && y < 8 && squares_[x][y].isEmpty());
+	return (x >= 0 && x < 8 && y >= 0 && y < 8);
 }
 
 Square *Board::operator[](size_t index)
@@ -55,26 +55,42 @@ void Board::initializeBoard()
 	}
 }
 
-void Board::movePiece(const Position &from, const Position &to)
+
+
+void Board::printPieceTypes(const Position &position) const
 {
-	if (!isValidPosition(to))
+	const Square &square = squares_[position.getX()][position.getY()];
+	if (square.isEmpty())
 	{
-		throw std::invalid_argument("Invalid destination position.");
+		std::cout << ". ";
+		return;
 	}
 
-	Square *fromSquare = &squares_[from.getX()][from.getY()];
-	Square *toSquare = &squares_[to.getX()][to.getY()];
-
-	Piece *pieceToMove = fromSquare->getPiece();
-	if (pieceToMove == nullptr)
+	const Piece *piece = square.getPiece();
+	char pieceChar = '?';
+	if (dynamic_cast<const King *>(piece))
 	{
-		throw std::invalid_argument("No piece at the source position.");
+		pieceChar = 'K';
 	}
-	if (pieceToMove->isValidMove(from, to, *this))
+	else if (dynamic_cast<const Queen *>(piece))
 	{
-		throw std::invalid_argument("Invalid move for the selected piece.");
+		pieceChar = 'Q';
 	}
-	pieceToMove->setHasMoved(true);
-	toSquare->setPiece(pieceToMove);
-	fromSquare->setPiece(nullptr);
+	else if (dynamic_cast<const Rook *>(piece))
+	{
+		pieceChar = 'R';
+	}
+	else if (dynamic_cast<const Bishop *>(piece))
+	{
+		pieceChar = 'B';
+	}
+	else if (dynamic_cast<const Knight *>(piece))
+	{
+		pieceChar = 'N';
+	}
+	else if (dynamic_cast<const Pawn *>(piece))
+	{
+		pieceChar = 'P';
+	}
+	std::cout << pieceChar << " ";
 }

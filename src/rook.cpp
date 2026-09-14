@@ -1,6 +1,5 @@
 #include "../include/rook.hpp"
 
-
 Rook::Rook(Color color) : Piece(color) {}
 
 
@@ -41,10 +40,14 @@ std::vector<Position> Rook::getValidMoves(const Position currentPosition, const 
 				{
 					validMoves.push_back(newPos);
 				}
-				break; 
+				break;
 			}
 		}
 	}
+//	for (const Position &pos : validMoves)
+//	{
+//		std::cout << "Valid move: (" << pos.getX() << ", " << pos.getY() << ")\n";
+//	}
 
 	return validMoves;
 }

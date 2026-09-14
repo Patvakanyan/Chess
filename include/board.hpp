@@ -4,16 +4,27 @@
 #include "./position.hpp"
 #include <stdexcept>
 
+#include "../include/bishop.hpp"
+#include "../include/king.hpp"
+#include "../include/knight.hpp"
+#include "../include/pawn.hpp"
+#include "../include/queen.hpp"
+#include "../include/rook.hpp"
+#include <iostream>
+
+
 class Board
 {
 private:
 	Square squares_[8][8];
-
+	void printPieceTypes(const Position &position) const;
 public:
 	Board();
 	Board(const Board &other) = delete;
 	Board &operator=(const Board &other) = delete;
-
+	Board(Board &&other) = default;
+	Board &operator=(Board &&other) = default;
+	~Board() = default;
 	Square *operator[](size_t index);
 	const Square *operator[](size_t index) const;
 

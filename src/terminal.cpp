@@ -107,16 +107,13 @@ void Terminal::start()
 		{
 			Position from(fromInput);
 			Position to(toInput);
-
 			game_.makeMove(from, to);
 		}
 		catch (const std::invalid_argument &e)
 		{
-			printInvalidMoveMessage();
+			std::cout << "Error: " << e.what() << std::endl;
 			continue;
 		}
-
-		clearScreen();
 
 		if (game_.isCheckmate(Color::White) ||
 			game_.isCheckmate(Color::Black) ||
