@@ -26,41 +26,50 @@ void Move::setHalfMoveClock()
 void Move::makeMove(Board &board)
 {
 	if (!board.isValidPosition(from_) || !board.isValidPosition(to_))
-	{
-		throw std::invalid_argument("Invalid destination position.");
-	}
+		throw std::invalid_argument("Invalid move position.");
 
 	Square *fromSquare = &board[from_.getX()][from_.getY()];
 	Square *toSquare = &board[to_.getX()][to_.getY()];
 
 	Piece *pieceToMove = fromSquare->getPiece();
 	if (pieceToMove == nullptr)
-	{
 		throw std::invalid_argument("No piece at the source position.");
-	}
+
 	if (!toSquare->isEmpty() && toSquare->getPiece()->getColor() == pieceToMove->getColor())
-	{
 		throw std::invalid_argument("Destination is occupied by your own piece.");
-	}
+
 	if (!pieceToMove->isValidMove(from_, to_, board))
-	{
 		throw std::invalid_argument("Invalid move for the selected piece.");
-	}
 
 	Piece *capturedPiece = toSquare->getPiece();
-	pieceToMove->setHasMoved(true);
+
 	toSquare->setPiece(pieceToMove);
 	fromSquare->setPiece(nullptr);
-	if (capturedPiece != nullptr)
+
+	std::cout << "Color of the piece being moved: " << (pieceToMove->getColor() == Color::White ? "White" : "Black") << std::endl;
+	if (ChessUtils::isInCheck(board, pieceToMove->getColor()))
 	{
-		delete capturedPiece;
+		toSquare->setPiece(capturedPiece);
+		fromSquare->setPiece(pieceToMove);
+		throw std::invalid_argument("Move puts your king in check.");
 	}
-	if (dynamic_cast<Pawn *>(pieceToMove) != nullptr || dynamic_cast<Pawn *>(capturedPiece) != nullptr)
+
+	pieceToMove->setHasMoved(true);
+
+	const bool movedPawn = dynamic_cast<Pawn *>(pieceToMove) != nullptr;
+	const bool capturedAny = capturedPiece != nullptr;
+
+	if (movedPawn || capturedAny)
 	{
 		halfMoveClock_ = 0;
 	}
 	else
 	{
 		halfMoveClock_++;
+	}
+
+	if (capturedPiece != nullptr)
+	{
+		delete capturedPiece;
 	}
 }
