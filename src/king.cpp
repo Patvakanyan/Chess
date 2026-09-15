@@ -1,5 +1,5 @@
 #include "../include/king.hpp"
- King::King(Color color) : Piece(color) {}
+King::King(Color color) : Piece(color) {}
 
 std::vector<Position> King::getValidMoves(const Position currentPosition, const Board &board) const
 {
@@ -8,7 +8,7 @@ std::vector<Position> King::getValidMoves(const Position currentPosition, const 
 	int currentY = currentPosition.getY();
 
 	const std::vector<std::pair<int, int>> directions = {
-		{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+		{1, 1}, {1, -1}, {-1, 1}, {-1, -1}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
 	for (const auto &dir : directions)
 	{
@@ -19,10 +19,8 @@ std::vector<Position> King::getValidMoves(const Position currentPosition, const 
 		{
 			continue;
 		}
-
 		Position newPos(x, y);
 		const Square &square = board[newPos.getX()][newPos.getY()];
-
 		if (square.isEmpty())
 		{
 			validMoves.push_back(newPos);
@@ -37,4 +35,3 @@ std::vector<Position> King::getValidMoves(const Position currentPosition, const 
 	}
 	return validMoves;
 }
-

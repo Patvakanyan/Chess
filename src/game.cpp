@@ -102,19 +102,35 @@ void Game::makeMove(const Position &from, const Position &to)
 		throw std::runtime_error("Game is over. No more moves can be made.");
 	}
 	Move move(from, to);
-	move.makeMove(board_);
+	try
+	{
+		move.makeMove(board_);
+	}
+	catch (const std::invalid_argument &e)
+	{
+		std::cerr << "Invalid move: " << e.what() << std::endl;
+		return;
+	}
 	moveHistory_.addMove(move);
 	moveHistory_.printMoveHistory();
 	currentTurn_ = (currentTurn_ == Color::White) ? Color::Black : Color::White;
 }
 
-bool Game::isCheckmate(Color) const
+bool Game::isCheck(Color color) const
 {
+	(void)color; // Suppress unused parameter warning
+	return ChessUtils::isInCheck(board_, color);
+}
+
+bool Game::isCheckmate(Color color) const
+{
+	(void)color; // Suppress unused parameter warning
 	return false;
 }
 
-bool Game::isStalemate(Color) const
+bool Game::isStalemate(Color color) const
 {
+	(void)color; // Suppress unused parameter warning
 	return false;
 }
 

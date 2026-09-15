@@ -14,8 +14,6 @@ std::vector<Position> Pawn::getValidMoves(const Position currentPosition, const 
 	{
 		validMoves.emplace_back(nextRow, currentY);
 	}
-	auto a = board[nextRow][currentY].isEmpty();
-	(void)a; // Suppress unused variable warning
 	int twoStepRow = currentX + 2 * direction;
 	if (!hasMoved_ && twoStepRow >= 0 && twoStepRow < 8 && board[nextRow][currentY].isEmpty() && board[twoStepRow][currentY].isEmpty())
 	{

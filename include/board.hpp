@@ -18,6 +18,8 @@ class Board
 private:
 	Square squares_[8][8];
 	void printPieceTypes(const Position &position) const;
+
+	
 public:
 	Board();
 	Board(const Board &other) = delete;

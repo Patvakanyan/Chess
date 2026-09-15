@@ -35,6 +35,7 @@ public:
 	~Game() = default;
 	void startGame(Color selectedColor);
 	void makeMove(const Position &from, const Position &to);
+	bool isCheck(Color color) const;
 	bool isCheckmate(Color color) const;
 	bool isStalemate(Color color) const;
 	Color getCurrentTurn() const;
