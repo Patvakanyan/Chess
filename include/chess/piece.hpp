@@ -1,8 +1,8 @@
 #pragma once
 
 #include <vector>
-#include "position.hpp"
-#include "color.hpp"
+#include "chess/position.hpp"
+#include "chess/color.hpp"
 
 class Board;
 

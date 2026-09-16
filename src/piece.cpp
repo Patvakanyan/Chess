@@ -1,4 +1,4 @@
-#include "../include/piece.hpp"
+#include "chess/piece.hpp"
 
 Piece::Piece(Color color) : color(color), hasMoved_(false) {}
 

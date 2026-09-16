@@ -1,23 +1,21 @@
-#include "../include/bishop.hpp"
+#include "chess/pieces/rook.hpp"
+
+Rook::Rook(Color color) : Piece(color) {}
 
 
-Bishop::Bishop(Color color) : Piece(color) {}
 
-
-std::vector <Position> Bishop::getValidMoves(const Position currentPosition, const Board &board) const
+std::vector<Position> Rook::getValidMoves(const Position currentPosition, const Board &board) const
 {
 	std::vector<Position> validMoves;
-	int currentX = currentPosition.getX();
-	int currentY = currentPosition.getY();
 
 	const std::vector<std::pair<int, int>> directions = {
-		{1, 1}, {1, -1}, {-1, 1}, {-1, -1}
+		{1, 0}, {-1, 0}, {0, 1}, {0, -1}
 	};
 
 	for (const auto &dir : directions)
 	{
-		int x = currentX;
-		int y = currentY;
+		int x = currentPosition.getX();
+		int y = currentPosition.getY();
 
 		while (true)
 		{
@@ -46,6 +44,10 @@ std::vector <Position> Bishop::getValidMoves(const Position currentPosition, con
 			}
 		}
 	}
+//	for (const Position &pos : validMoves)
+//	{
+//		std::cout << "Valid move: (" << pos.getX() << ", " << pos.getY() << ")\n";
+//	}
 
 	return validMoves;
 }

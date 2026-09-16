@@ -1,4 +1,4 @@
-#include "../include/king.hpp"
+#include "chess/pieces/king.hpp"
 King::King(Color color) : Piece(color) {}
 
 std::vector<Position> King::getValidMoves(const Position currentPosition, const Board &board) const

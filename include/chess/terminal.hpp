@@ -1,6 +1,6 @@
 #pragma once
 
-#include "game.hpp"
+#include "chess/game.hpp"
 #include <iostream>
 #include <string>
 #include <stdexcept>

@@ -1,4 +1,4 @@
-#include "../include/terminal.hpp"
+#include "chess/terminal.hpp"
 
 Terminal::Terminal(Game &game) : game_(game) {}
 
@@ -109,16 +109,26 @@ void Terminal::start()
 			Position to(toInput);
 			game_.makeMove(from, to);
 		}
-		catch (const std::invalid_argument &e)
+		catch (const InvalidMoveException &e)
 		{
-			std::cout << "Error: " << e.what() << std::endl;
+			std::cerr << "Invalid move: " << e.what() << std::endl;
+			printInvalidMoveMessage();
+			continue;
+		}
+		catch (const InvalidPositionException &e)
+		{
+			std::cerr << "Invalid position: " << e.what() << std::endl;
+			printInvalidMoveMessage();
+			continue;
+		}
+		catch (const EmptySquareException &e)
+		{
+			std::cerr << "Empty square: " << e.what() << std::endl;
+			printInvalidMoveMessage();
 			continue;
 		}
 
-		if (game_.isCheckmate(Color::White) ||
-			game_.isCheckmate(Color::Black) ||
-			game_.isStalemate(Color::White) ||
-			game_.isStalemate(Color::Black))
+		if (game_.isCheckmate(Color::White) || game_.isCheckmate(Color::Black))
 		{
 			printGameResult();
 			break;

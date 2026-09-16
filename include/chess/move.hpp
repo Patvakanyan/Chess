@@ -1,8 +1,11 @@
 #pragma once
 
-#include "position.hpp"
-#include "board.hpp"
-#include "chessUtils.hpp"
+#include "chess/position.hpp"
+#include "chess/board.hpp"
+#include "chess/chessUtils.hpp"
+#include "chess/exceptions/invalidPositionException.hpp"
+#include "chess/exceptions/emptySquareException.hpp"
+
 class Move
 {
 private:

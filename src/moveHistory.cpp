@@ -1,4 +1,4 @@
-#include "../include/moveHistory.hpp"
+#include "chess/moveHistory.hpp"
 
 const std::vector<Move> &MoveHistory::getMoves() const
 {

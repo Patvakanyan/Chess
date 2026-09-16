@@ -1,15 +1,14 @@
-#include "../include/rook.hpp"
+#include "chess/pieces/queen.hpp"
 
-Rook::Rook(Color color) : Piece(color) {}
+Queen::Queen(Color color) : Piece(color) {}
 
-
-
-std::vector<Position> Rook::getValidMoves(const Position currentPosition, const Board &board) const
+std::vector<Position> Queen::getValidMoves(Position currentPosition, const Board &board) const
 {
 	std::vector<Position> validMoves;
 
 	const std::vector<std::pair<int, int>> directions = {
-		{1, 0}, {-1, 0}, {0, 1}, {0, -1}
+		{1, 0}, {-1, 0}, {0, 1}, {0, -1},
+		{1, 1}, {1, -1}, {-1, 1}, {-1, -1}
 	};
 
 	for (const auto &dir : directions)
@@ -44,10 +43,6 @@ std::vector<Position> Rook::getValidMoves(const Position currentPosition, const 
 			}
 		}
 	}
-//	for (const Position &pos : validMoves)
-//	{
-//		std::cout << "Valid move: (" << pos.getX() << ", " << pos.getY() << ")\n";
-//	}
 
 	return validMoves;
 }

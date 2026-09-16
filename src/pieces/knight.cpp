@@ -1,4 +1,4 @@
-#include "../include/knight.hpp"
+#include "chess/pieces/knight.hpp"
 
 Knight::Knight(Color color) : Piece(color) {}
 

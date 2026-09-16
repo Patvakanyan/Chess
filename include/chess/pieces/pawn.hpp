@@ -1,8 +1,8 @@
 #pragma once
 
-#include "piece.hpp"
-#include "position.hpp"
-#include "board.hpp"
+#include "chess/piece.hpp"
+#include "chess/position.hpp"
+#include "chess/board.hpp"
 #include <cmath>
 
 class Pawn : public Piece

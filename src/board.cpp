@@ -1,4 +1,4 @@
-#include "../include/board.hpp"
+#include "chess/board.hpp"
 
 Board::Board() : squares_{}
 {

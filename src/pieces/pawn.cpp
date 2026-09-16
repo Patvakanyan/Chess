@@ -1,4 +1,4 @@
-#include "../include/pawn.hpp"
+#include "chess/pieces/pawn.hpp"
 
 Pawn::Pawn(Color color) : Piece(color) {}
 

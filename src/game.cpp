@@ -1,4 +1,4 @@
-#include "../include/game.hpp"
+#include "chess/game.hpp"
 
 Game::Game() : moveHistory_(), currentTurn_(Color::White), selectedColor_(Color::White), gameOver_(false)
 {
@@ -106,14 +106,21 @@ void Game::makeMove(const Position &from, const Position &to)
 	{
 		move.makeMove(board_);
 	}
-	catch (const std::invalid_argument &e)
+	catch (const InvalidMoveException &e)
 	{
-		std::cerr << "Invalid move: " << e.what() << std::endl;
-		return;
+		throw InvalidMoveException("Invalid move: " + std::string(e.what()));
 	}
+	catch (const InvalidPositionException &e)
+	{
+		throw InvalidPositionException("Invalid position: " + std::string(e.what()));
+	}
+	catch (const EmptySquareException &e)
+	{
+		throw EmptySquareException("Empty square: " + std::string(e.what()));
+	}
+	currentTurn_ = (currentTurn_ == Color::White) ? Color::Black : Color::White;
 	moveHistory_.addMove(move);
 	moveHistory_.printMoveHistory();
-	currentTurn_ = (currentTurn_ == Color::White) ? Color::Black : Color::White;
 }
 
 bool Game::isCheck(Color color) const

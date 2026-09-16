@@ -1,4 +1,4 @@
-#include "../include/square.hpp"
+#include "chess/square.hpp"
 
 Square::Square(Piece *piece, Color color) : piece_(piece), color_(color)
 {

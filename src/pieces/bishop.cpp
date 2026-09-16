@@ -1,20 +1,23 @@
-#include "../include/queen.hpp"
+#include "chess/pieces/bishop.hpp"
 
-Queen::Queen(Color color) : Piece(color) {}
 
-std::vector<Position> Queen::getValidMoves(Position currentPosition, const Board &board) const
+Bishop::Bishop(Color color) : Piece(color) {}
+
+
+std::vector <Position> Bishop::getValidMoves(const Position currentPosition, const Board &board) const
 {
 	std::vector<Position> validMoves;
+	int currentX = currentPosition.getX();
+	int currentY = currentPosition.getY();
 
 	const std::vector<std::pair<int, int>> directions = {
-		{1, 0}, {-1, 0}, {0, 1}, {0, -1},
 		{1, 1}, {1, -1}, {-1, 1}, {-1, -1}
 	};
 
 	for (const auto &dir : directions)
 	{
-		int x = currentPosition.getX();
-		int y = currentPosition.getY();
+		int x = currentX;
+		int y = currentY;
 
 		while (true)
 		{

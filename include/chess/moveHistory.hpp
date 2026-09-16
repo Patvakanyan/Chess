@@ -1,6 +1,6 @@
 #pragma once
 
-#include "move.hpp"
+#include "chess/move.hpp"
 #include <vector>
 
 class MoveHistory

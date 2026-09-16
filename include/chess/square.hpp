@@ -1,8 +1,8 @@
 #pragma once
 
-#include "position.hpp"
-#include "piece.hpp"
-#include "color.hpp"
+#include "chess/position.hpp"
+#include "chess/piece.hpp"
+#include "chess/color.hpp"
 
 class Square
 {

@@ -1,15 +1,15 @@
 #pragma once
 
-#include "./square.hpp"
-#include "./position.hpp"
+#include "chess/square.hpp"
+#include "chess/position.hpp"
 #include <stdexcept>
 
-#include "../include/bishop.hpp"
-#include "../include/king.hpp"
-#include "../include/knight.hpp"
-#include "../include/pawn.hpp"
-#include "../include/queen.hpp"
-#include "../include/rook.hpp"
+#include "pieces/bishop.hpp"
+#include "pieces/king.hpp"
+#include "pieces/knight.hpp"
+#include "pieces/pawn.hpp"
+#include "pieces/queen.hpp"
+#include "pieces/rook.hpp"
 #include <iostream>
 
 

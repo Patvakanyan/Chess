@@ -2,25 +2,19 @@ NAME := chess
 OBJ_DIR := obj
 
 CXX := c++
-CPPFLAGS := -Iinclude
+CPPFLAGS := -Iinclude -Iinclude/chess
 CXXFLAGS := -Wall -Wextra -Werror -std=c++17 -g3
 
-MAIN_SRC := main.cpp
-SRC := $(wildcard src/*.cpp)
-OBJ := $(OBJ_DIR)/main.o $(patsubst src/%.cpp,$(OBJ_DIR)/%.o,$(SRC))
+SRC := $(wildcard src/*.cpp src/pieces/*.cpp src/exceptions/*.cpp)
+OBJ := $(patsubst src/%.cpp,$(OBJ_DIR)/%.o,$(SRC))
 
 all: $(NAME)
 
 $(NAME): $(OBJ)
 	$(CXX) $(OBJ) -o $@
 
-$(OBJ_DIR):
-	mkdir -p $@
-
-$(OBJ_DIR)/main.o: $(MAIN_SRC) | $(OBJ_DIR)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
-
-$(OBJ_DIR)/%.o: src/%.cpp | $(OBJ_DIR)
+$(OBJ_DIR)/%.o: src/%.cpp
+	mkdir -p $(@D)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 run: $(NAME)
