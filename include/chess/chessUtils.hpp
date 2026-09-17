@@ -2,6 +2,7 @@
 #include "chess/board.hpp"
 #include "chess/position.hpp"
 #include "chess/color.hpp"
+#include "chess/move.hpp"
 
 class ChessUtils
 {
@@ -14,8 +15,10 @@ public:
 	static bool isKnightAttacked(const Board &board, const Position &pos, Color color);
 	static bool isPawnAttacked(const Board &board, const Position &pos, Color color);
 	static bool isKingAttacked(const Board &board, const Position &pos, Color color);
+
+	static bool hasLegalMoves(Board &board, Color color);
 	static Position findKing(const Board &board, Color color);
 	static bool isInCheck(const Board &board, Color color);
-	static bool isCheckmate(const Board &board, Color color);
+	static bool isCheckmate(Board &board, Color color) ;
 	static bool isStalemate(const Board &board, Color color);
 };
