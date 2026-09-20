@@ -1,5 +1,4 @@
 #include "chess/move.hpp"
-#include "chess/exceptions/invalidMove.hpp"
 
 Move::Move(const Position &from, const Position &to) : from_(from), to_(to), halfMoveClock_(0) {}
 
@@ -53,22 +52,17 @@ void Move::makeMove(Board &board)
 		throw InvalidMoveException("Move puts your king in check.");
 	}
 
-	pieceToMove->setHasMoved(true);
+	pieceToMove->addHasMoved();
 
 	const bool movedPawn = dynamic_cast<Pawn *>(pieceToMove) != nullptr;
 	const bool capturedAny = capturedPiece != nullptr;
 
 	if (movedPawn || capturedAny)
-	{
 		halfMoveClock_ = 0;
-	}
 	else
-	{
 		halfMoveClock_++;
-	}
 
 	if (capturedPiece != nullptr)
-	{
 		delete capturedPiece;
-	}
 }
+

@@ -19,6 +19,6 @@ public:
 	static bool hasLegalMoves(Board &board, Color color);
 	static Position findKing(const Board &board, Color color);
 	static bool isInCheck(const Board &board, Color color);
-	static bool isCheckmate(Board &board, Color color) ;
-	static bool isStalemate(const Board &board, Color color);
+	static bool isCheckmate(Board &board, Color color);
+	static bool isStalemate(Board &board, Color color);
 };

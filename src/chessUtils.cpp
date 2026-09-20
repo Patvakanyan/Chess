@@ -21,19 +21,19 @@ bool ChessUtils::isQueenBishopAttacked(const Board &board, const Position &pos, 
 
 	for (auto dir : directions)
 	{
-		int currentX = pos.getX();
-		int currentY = pos.getY();
+		int currentX = pos.getX() + dir.getX();
+		int currentY = pos.getY() + dir.getY();
 		while (currentX >= 0 && currentX < 8 && currentY >= 0 && currentY < 8)
 		{
 			const Square &square = board[currentX][currentY];
 			if (!square.isEmpty())
 			{
 				Piece *piece = square.getPiece();
-				if (piece->getColor() != color)
+				if (piece->getColor() == color && (dynamic_cast<Queen *>(piece) || dynamic_cast<Bishop *>(piece)))
 				{
-					if (dynamic_cast<Queen *>(piece) || dynamic_cast<Bishop *>(piece))
-						return true;
+					return true;
 				}
+				break;
 			}
 			currentX += dir.getX();
 			currentY += dir.getY();
@@ -50,8 +50,8 @@ bool ChessUtils::isQueenRookAttacked(const Board &board, const Position &pos, Co
 
 	for (auto dir : directions)
 	{
-		int currentX = pos.getX();
-		int currentY = pos.getY();
+		int currentX = pos.getX() + dir.getX();
+		int currentY = pos.getY() + dir.getY();
 		while (currentX >= 0 && currentX < 8 && currentY >= 0 && currentY < 8)
 		{
 			const Square &square = board[currentX][currentY];
@@ -59,11 +59,11 @@ bool ChessUtils::isQueenRookAttacked(const Board &board, const Position &pos, Co
 			if (!square.isEmpty())
 			{
 				Piece *piece = square.getPiece();
-				if (piece->getColor() != color)
+				if (piece->getColor() == color && (dynamic_cast<Queen *>(piece) || dynamic_cast<Rook *>(piece)))
 				{
-					if (dynamic_cast<Queen *>(piece) || dynamic_cast<Rook *>(piece))
-						return true;
+					return true;
 				}
+				break;
 			}
 			currentX += dir.getX();
 			currentY += dir.getY();
@@ -90,7 +90,7 @@ bool ChessUtils::isKnightAttacked(const Board &board, const Position &pos, Color
 			if (!square.isEmpty())
 			{
 				Piece *piece = square.getPiece();
-				if (piece && piece->getColor() != color && dynamic_cast<Knight *>(piece))
+				if (piece && piece->getColor() == color && dynamic_cast<Knight *>(piece))
 					return true;
 			}
 		}
@@ -115,7 +115,7 @@ bool ChessUtils::isPawnAttacked(const Board &board, const Position &pos, Color c
 			if (!square.isEmpty())
 			{
 				Piece *piece = square.getPiece();
-				if (piece->getColor() != color && dynamic_cast<Pawn *>(piece))
+				if (piece->getColor() == color && dynamic_cast<Pawn *>(piece))
 				{
 					return true;
 				}
@@ -142,7 +142,7 @@ bool ChessUtils::isKingAttacked(const Board &board, const Position &pos, Color c
 			if (!square.isEmpty())
 			{
 				Piece *piece = square.getPiece();
-				if (piece->getColor() != color && dynamic_cast<King *>(piece))
+				if (piece->getColor() == color && dynamic_cast<King *>(piece))
 				{
 					return true;
 				}
@@ -167,5 +167,51 @@ bool ChessUtils::isInCheck(const Board &board, Color color)
 	{
 		throw std::runtime_error("King not found on the board.");
 	}
-	return isSquareAttacked(board, kingPos, color);
+	Color opponentColor = (color == Color::White) ? Color::Black : Color::White;
+	return isSquareAttacked(board, kingPos, opponentColor);
+}
+
+bool ChessUtils::hasLegalMoves(Board &board, Color color)
+{
+	for (size_t i = 0; i < 8; i++)
+	{
+		for (size_t j = 0; j < 8; j++)
+		{
+			Piece *piece = board[i][j].getPiece();
+			if (piece == nullptr)
+				continue;
+
+			if (piece->getColor() != color)
+				continue;
+			Position currentPos = Position(i, j);
+			std::vector<Position> validMoves = piece->getValidMoves(currentPos, board);
+			for (const Position &newPos : validMoves)
+			{
+				Square *fromSquare = &board[currentPos.getX()][currentPos.getY()];
+				Square *toSquare = &board[newPos.getX()][newPos.getY()];
+				Piece *capturedPiece = toSquare->getPiece();
+				toSquare->setPiece(piece);
+				fromSquare->setPiece(nullptr);
+				piece->addHasMoved();
+				bool legal = !isInCheck(board, color);
+				toSquare->setPiece(capturedPiece);
+				fromSquare->setPiece(piece);
+				piece->subtractHasMoved();
+
+				if (legal)
+					return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool ChessUtils::isCheckmate(Board &board, Color color)
+{
+	return isInCheck(board, color) && !hasLegalMoves(board, color);
+}
+
+bool ChessUtils::isStalemate(Board &board, Color color)
+{
+	return !isInCheck(board, color) && !hasLegalMoves(board, color);
 }

@@ -12,7 +12,9 @@ public:
 	MoveHistory(const MoveHistory &other) = delete;
 	MoveHistory &operator=(const MoveHistory &other) = delete;
 	~MoveHistory() = default;
+
 	void addMove(const Move &move);
+	void undoMove(Board &board);
 	const std::vector<Move> &getMoves() const;
 	void printMoveHistory() const;
 };

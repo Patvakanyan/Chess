@@ -20,18 +20,14 @@ bool Board::isValidPosition(const Position &position) const
 Square *Board::operator[](size_t index)
 {
 	if (index >= 8)
-	{
 		throw std::out_of_range("Row index must be between 0 and 7.");
-	}
 	return squares_[index];
 }
 
 const Square *Board::operator[](size_t index) const
 {
 	if (index >= 8)
-	{
 		throw std::out_of_range("Row index must be between 0 and 7.");
-	}
 	return squares_[index];
 }
 
@@ -69,28 +65,16 @@ void Board::printPieceTypes(const Position &position) const
 	const Piece *piece = square.getPiece();
 	char pieceChar = '?';
 	if (dynamic_cast<const King *>(piece))
-	{
 		pieceChar = 'K';
-	}
 	else if (dynamic_cast<const Queen *>(piece))
-	{
 		pieceChar = 'Q';
-	}
 	else if (dynamic_cast<const Rook *>(piece))
-	{
 		pieceChar = 'R';
-	}
 	else if (dynamic_cast<const Bishop *>(piece))
-	{
 		pieceChar = 'B';
-	}
 	else if (dynamic_cast<const Knight *>(piece))
-	{
 		pieceChar = 'N';
-	}
 	else if (dynamic_cast<const Pawn *>(piece))
-	{
 		pieceChar = 'P';
-	}
 	std::cout << pieceChar << " ";
 }

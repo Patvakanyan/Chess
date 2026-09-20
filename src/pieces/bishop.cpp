@@ -28,10 +28,8 @@ std::vector <Position> Bishop::getValidMoves(const Position currentPosition, con
 			{
 				break;
 			}
-
 			Position newPos(x, y);
 			const Square &square = board[newPos.getX()][newPos.getY()];
-
 			if (square.isEmpty())
 			{
 				validMoves.push_back(newPos);

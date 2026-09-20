@@ -123,23 +123,6 @@ void Game::makeMove(const Position &from, const Position &to)
 	moveHistory_.printMoveHistory();
 }
 
-bool Game::isCheck(Color color) const
-{
-	(void)color; // Suppress unused parameter warning
-	return ChessUtils::isInCheck(board_, color);
-}
-
-bool Game::isCheckmate(Color color) const
-{
-	(void)color; // Suppress unused parameter warning
-	return false;
-}
-
-bool Game::isStalemate(Color color) const
-{
-	(void)color; // Suppress unused parameter warning
-	return false;
-}
 
 Color Game::getCurrentTurn() const
 {

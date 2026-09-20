@@ -11,14 +11,10 @@ std::vector<Position> Pawn::getValidMoves(const Position currentPosition, const 
 
 	int nextRow = currentX + direction;
 	if (nextRow >= 0 && nextRow < 8 && board[nextRow][currentY].isEmpty())
-	{
 		validMoves.emplace_back(nextRow, currentY);
-	}
 	int twoStepRow = currentX + 2 * direction;
-	if (!hasMoved_ && twoStepRow >= 0 && twoStepRow < 8 && board[nextRow][currentY].isEmpty() && board[twoStepRow][currentY].isEmpty())
-	{
+	if (getHasMoved() == 0 && twoStepRow >= 0 && twoStepRow < 8 && board[nextRow][currentY].isEmpty() && board[twoStepRow][currentY].isEmpty())
 		validMoves.emplace_back(twoStepRow, currentY);
-	}
 
 	for (int dx : {-1, 1})
 	{

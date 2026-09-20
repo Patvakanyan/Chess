@@ -23,17 +23,13 @@ std::vector<Position> Rook::getValidMoves(const Position currentPosition, const 
 			y += dir.second;
 
 			if (x < 0 || x >= 8 || y < 0 || y >= 8)
-			{
 				break;
-			}
 
 			Position newPos(x, y);
 			const Square &square = board[newPos.getX()][newPos.getY()];
 
 			if (square.isEmpty())
-			{
 				validMoves.push_back(newPos);
-			}
 			else
 			{
 				if (square.getPiece()->getColor() != this->getColor())
@@ -44,10 +40,5 @@ std::vector<Position> Rook::getValidMoves(const Position currentPosition, const 
 			}
 		}
 	}
-//	for (const Position &pos : validMoves)
-//	{
-//		std::cout << "Valid move: (" << pos.getX() << ", " << pos.getY() << ")\n";
-//	}
-
 	return validMoves;
 }

@@ -8,9 +8,7 @@ Position::Position(int row, int column)
 Position::Position(const std::string &position)
 {
 	if (position.length() != 2 || position[0] < 'a' || position[0] > 'h' || position[1] < '1' || position[1] > '8')
-	{
 		throw std::invalid_argument("Invalid position string");
-	}
 	column_ = position[0] - 'a';
 	row_ = 8 - (position[1] - '0');
 }

@@ -10,7 +10,7 @@ class Piece
 {
 protected:
 	Color color;
-	bool hasMoved_;
+	size_t hasMoved_;
 public:
 	Piece() = delete;
 	Piece(Color color);
@@ -18,8 +18,9 @@ public:
 
 	Piece(const Piece &other) = default;
 	Piece &operator=(const Piece &other) = default;
-	void setHasMoved(bool hasMoved);
-	bool getHasMoved() const;
+	size_t getHasMoved() const;
+	void addHasMoved();
+	void subtractHasMoved();
 
 	Color getColor() const;
 	bool isValidMove(const Position currentPosition,const Position newPosition, const Board &board) const;

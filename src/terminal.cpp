@@ -49,22 +49,22 @@ void Terminal::printGameOverMessage() const
 
 void Terminal::printGameResult() const
 {
-	if (game_.isCheckmate(Color::White))
-	{
-		printCheckmateMessage(Color::Black);
-	}
-	else if (game_.isCheckmate(Color::Black))
-	{
-		printCheckmateMessage(Color::White);
-	}
-	else if (game_.isStalemate(Color::White) || game_.isStalemate(Color::Black))
-	{
-		printStalemateMessage();
-	}
-	else
-	{
-		std::cout << "Game is still ongoing." << std::endl;
-	}
+	// if (game_.isCheckmate(Color::White))
+	// {
+	// 	printCheckmateMessage(Color::Black);
+	// }
+	// else if (game_.isCheckmate(Color::Black))
+	// {
+	// 	printCheckmateMessage(Color::White);
+	// }
+	// else if (game_.isStalemate(Color::White) || game_.isStalemate(Color::Black))
+	// {
+	// 	printStalemateMessage();
+	// }
+	// else
+	// {
+	// 	std::cout << "Game is still ongoing." << std::endl;
+	// }
 }
 
 void Terminal::clearScreen()
@@ -127,11 +127,17 @@ void Terminal::start()
 			printInvalidMoveMessage();
 			continue;
 		}
-
-		if (game_.isCheckmate(Color::White) || game_.isCheckmate(Color::Black))
+		catch (const std::exception &e)
 		{
-			printGameResult();
-			break;
+			std::cerr << "Error: " << e.what() << std::endl;
+			printInvalidMoveMessage();
+			continue;
 		}
+
+		// if (game_.isCheckmate(Color::White) || game_.isCheckmate(Color::Black))
+		// {
+		// 	printGameResult();
+		// 	break;
+		// }
 	}
 }
