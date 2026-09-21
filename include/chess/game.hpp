@@ -36,8 +36,10 @@ public:
 	Game(Game &&other) = default;
 	Game &operator=(Game &&other) = default;
 	~Game() = default;
+
 	void startGame(Color selectedColor);
 	void makeMove(const Position &from, const Position &to);
+	void undoMove();
 	Color getCurrentTurn() const;
 	void printBoard() const;
 };

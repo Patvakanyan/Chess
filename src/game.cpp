@@ -29,6 +29,16 @@ void Game::prepareBoard()
 	}
 }
 
+void Game::undoMove()
+{
+	currentTurn_ = (currentTurn_ == Color::White) ? Color::Black : Color::White;
+	if (!moveHistory_.undoMove(board_))
+	{
+		currentTurn_ = (currentTurn_ == Color::White) ? Color::Black : Color::White;
+		throw InvalidMoveException("No moves to undo.");
+	}
+}
+
 void Game::startGame(Color selectedColor)
 {
 	currentTurn_ = Color::White;

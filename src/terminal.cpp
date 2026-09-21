@@ -96,8 +96,22 @@ void Terminal::start()
 		std::istringstream iss(input);
 		std::string fromInput;
 		std::string toInput;
+		std::string extraInput;
 
-		if (!(iss >> fromInput >> toInput))
+		if (input == "undo")
+		{
+			try
+			{
+				game_.undoMove();
+				continue;
+			}
+			catch (const std::exception &e)
+			{
+				std::cerr << "Error: " << e.what() << std::endl;
+				continue;
+			}
+		}
+		if (!(iss >> fromInput >> toInput) || (iss >> extraInput))
 		{
 			std::cout << "Invalid input. Please try again." << std::endl;
 			continue;

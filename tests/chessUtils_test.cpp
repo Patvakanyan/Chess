@@ -26,6 +26,38 @@ namespace
 		return !ChessUtils::isInCheck(board, Color::White);
 	}
 
+	bool protectedQueenCheckmatesKing()
+	{
+		Board board;
+		board.initializeBoard();
+		board.placePiece(new King(Color::Black), Position(0, 0));
+		board.placePiece(new Queen(Color::White), Position(1, 1));
+		board.placePiece(new King(Color::White), Position(2, 2));
+		return ChessUtils::isCheckmate(board, Color::Black);
+	}
+
+	bool checkWithKingEscapeIsNotCheckmate()
+	{
+		Board board;
+		board.initializeBoard();
+		board.placePiece(new King(Color::Black), Position(0, 0));
+		board.placePiece(new Queen(Color::White), Position(1, 1));
+		board.placePiece(new King(Color::White), Position(3, 3));
+		return ChessUtils::isInCheck(board, Color::Black) &&
+			   !ChessUtils::isCheckmate(board, Color::Black);
+	}
+
+	bool stalemateIsNotCheckmate()
+	{
+		Board board;
+		board.initializeBoard();
+		board.placePiece(new King(Color::Black), Position(0, 0));
+		board.placePiece(new Queen(Color::White), Position(1, 2));
+		board.placePiece(new King(Color::White), Position(2, 2));
+		return ChessUtils::isStalemate(board, Color::Black) &&
+			   !ChessUtils::isCheckmate(board, Color::Black);
+	}
+
 	bool runTest(const std::string &name, bool result)
 	{
 		std::cout << (result ? "PASS: " : "FAIL: ") << name << '\n';
@@ -62,6 +94,11 @@ int main()
 	allPassed &= runTest("white king checks black king",
 						 isCheck(Color::Black, new King(Color::White), Position(3, 3)));
 	allPassed &= runTest("a piece blocks a rook check", blockedRookIsNotCheck());
+	allPassed &= runTest("a protected queen checkmates the king",
+						 protectedQueenCheckmatesKing());
+	allPassed &= runTest("a king escape prevents checkmate",
+						 checkWithKingEscapeIsNotCheckmate());
+	allPassed &= runTest("stalemate is not checkmate", stalemateIsNotCheckmate());
 
 	return allPassed ? 0 : 1;
 }

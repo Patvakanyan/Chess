@@ -22,6 +22,7 @@ public:
 	const Position &getFrom() const;
 	const Position &getTo() const;
 
+	std::string toString() const;
 	void setFrom(const Position &from);
 	void setTo(const Position &to);
 	size_t getHalfMoveClock() const;

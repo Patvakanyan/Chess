@@ -17,6 +17,16 @@ size_t Move::getHalfMoveClock() const
 	return halfMoveClock_;
 }
 
+void Move::setFrom(const Position &from)
+{
+	from_ = from;
+}
+
+void Move::setTo(const Position &to)
+{
+	to_ = to;
+}
+
 void Move::setHalfMoveClock()
 {
 	halfMoveClock_ = 0;
@@ -66,3 +76,8 @@ void Move::makeMove(Board &board)
 		delete capturedPiece;
 }
 
+
+std::string Move::toString() const
+{
+	return from_.toString() + " -> " + to_.toString();
+}

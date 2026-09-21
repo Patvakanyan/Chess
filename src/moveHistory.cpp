@@ -10,26 +10,24 @@ void MoveHistory::addMove(const Move &move)
 	moves_.push_back(move);
 }
 
-void MoveHistory::undoMove(Board &board)
+bool MoveHistory::undoMove(Board &board)
 {
 	if (moves_.empty())
-	{
-		std::cout << "No moves to undo." << std::endl;
-		return;
-	}
+		return false;
 	Move move = moves_.back();
+	Position tmp = move.getFrom();
+	move.setFrom(move.getTo());
+	move.setTo(tmp);
+	std::cout << "Undoing move: " << move.toString() << std::endl;
+	Piece *tmpPiece = board[move.getFrom().getX()][move.getFrom().getY()].getPiece();
+	board[move.getTo().getX()][move.getTo().getY()].setPiece(tmpPiece);
+	board[move.getFrom().getX()][move.getFrom().getY()].setPiece(nullptr);
 	moves_.pop_back();
-	try
-	{
-		move.makeMove(board);
-	}
-	catch (const std::exception &e)
-	{
-		std::cerr << "Error undoing move: " << e.what() << std::endl;
-	}
 	Piece *pieceToMove = board[move.getTo().getX()][move.getTo().getY()].getPiece();
 	if (pieceToMove != nullptr)
 		pieceToMove->subtractHasMoved();
+
+	return true;
 }
 
 void MoveHistory::printMoveHistory() const

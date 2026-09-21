@@ -197,7 +197,6 @@ bool ChessUtils::hasLegalMoves(Board &board, Color color)
 				toSquare->setPiece(capturedPiece);
 				fromSquare->setPiece(piece);
 				piece->subtractHasMoved();
-
 				if (legal)
 					return true;
 			}
