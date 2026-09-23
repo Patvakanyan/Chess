@@ -1,7 +1,7 @@
 #pragma once
 
 #include "chess/board.hpp"
-#include "chess/color.hpp"
+#include "chess/utils/color.hpp"
 #include "chess/position.hpp"
 #include "chess/piece.hpp"
 #include "pieces/king.hpp"
@@ -24,7 +24,6 @@ private:
 	MoveHistory moveHistory_;
 
 	Color currentTurn_;
-	Color selectedColor_;
 	bool gameOver_;
 
 	void prepareBoard();
@@ -37,6 +36,10 @@ public:
 	Game &operator=(Game &&other) = default;
 	~Game() = default;
 
+	Board &getBoard();
+	const Board &getBoard() const;
+
+	int getHalfMoveClock() const;
 	void startGame(Color selectedColor);
 	void makeMove(const Position &from, const Position &to);
 	void undoMove();

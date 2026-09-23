@@ -1,7 +1,17 @@
 #include "chess/game.hpp"
 
-Game::Game() : moveHistory_(), currentTurn_(Color::White), selectedColor_(Color::White), gameOver_(false)
+Game::Game() : moveHistory_(), currentTurn_(Color::White), gameOver_(false)
 {
+}
+
+Board &Game::getBoard()
+{
+	return board_;
+}
+
+const Board &Game::getBoard() const
+{
+	return board_;
 }
 
 void Game::prepareBoard()
@@ -41,12 +51,16 @@ void Game::undoMove()
 
 void Game::startGame(Color selectedColor)
 {
-	currentTurn_ = Color::White;
-	selectedColor_ = selectedColor;
+	currentTurn_ = selectedColor;
 	gameOver_ = false;
 	board_.initializeBoard();
 
 	prepareBoard();
+}
+
+int Game::getHalfMoveClock() const
+{
+	return moveHistory_.getHalfMoveClock();
 }
 
 void Game::printBoard() const

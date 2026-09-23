@@ -1,7 +1,7 @@
 #pragma once
 #include "chess/board.hpp"
 #include "chess/position.hpp"
-#include "chess/color.hpp"
+#include "chess/utils/color.hpp"
 #include "chess/move.hpp"
 
 class ChessUtils
@@ -20,5 +20,5 @@ public:
 	static Position findKing(const Board &board, Color color);
 	static bool isInCheck(const Board &board, Color color);
 	static bool isCheckmate(Board &board, Color color);
-	static bool isStalemate(Board &board, Color color);
+	static bool isStalemate(Board &board, Color color, int halfMoveClock = 0);
 };

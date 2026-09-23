@@ -1,10 +1,13 @@
 #pragma once
 
 #include "chess/game.hpp"
+#include "chess/utils/chessGameResult.hpp"
 #include <iostream>
 #include <string>
 #include <stdexcept>
 #include <sstream>
+
+
 class Terminal
 {
 private:
@@ -12,13 +15,14 @@ private:
 public:
 	Terminal(Game& game);
 
+
 	void printWelcomeMessage() const;
 	void printCurrentTurn() const;
 	void printCheckmateMessage(Color winner) const;
 	void printStalemateMessage() const;
 	void printInvalidMoveMessage() const;
 	void printGameOverMessage() const;
-	void printGameResult() const;
+	void printGameResult(ChessGameResult result) const;
 	void start();
 	void clearScreen();
 

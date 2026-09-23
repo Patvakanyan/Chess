@@ -47,24 +47,29 @@ void Terminal::printGameOverMessage() const
 	std::cout << "Game Over!" << std::endl;
 }
 
-void Terminal::printGameResult() const
+void Terminal::printGameResult(ChessGameResult result) const
 {
-	// if (game_.isCheckmate(Color::White))
-	// {
-	// 	printCheckmateMessage(Color::Black);
-	// }
-	// else if (game_.isCheckmate(Color::Black))
-	// {
-	// 	printCheckmateMessage(Color::White);
-	// }
-	// else if (game_.isStalemate(Color::White) || game_.isStalemate(Color::Black))
-	// {
-	// 	printStalemateMessage();
-	// }
-	// else
-	// {
-	// 	std::cout << "Game is still ongoing." << std::endl;
-	// }
+	switch (result)
+	{
+	case ChessGameResult::Checkmate:
+		printCheckmateMessage(game_.getCurrentTurn() == Color::White ? Color::Black : Color::White);
+		break;
+	case ChessGameResult::Stalemate:
+		printStalemateMessage();
+		break;
+	case ChessGameResult::Draw:
+		std::cout << "The game is a draw." << std::endl;
+		break;
+	case ChessGameResult::Resignation:
+		std::cout << "A player has resigned. Game over." << std::endl;
+		break;
+	case ChessGameResult::Timeout:
+		std::cout << "A player has run out of time. Game over." << std::endl;
+		break;
+	default:
+		std::cout << "The game is ongoing." << std::endl;
+		break;
+	}
 }
 
 void Terminal::clearScreen()
@@ -148,10 +153,16 @@ void Terminal::start()
 			continue;
 		}
 
-		// if (game_.isCheckmate(Color::White) || game_.isCheckmate(Color::Black))
-		// {
-		// 	printGameResult();
-		// 	break;
-		// }
+		if (ChessUtils::isCheckmate(game_.getBoard(), Color::White) || ChessUtils::isCheckmate(game_.getBoard(), Color::Black))
+		{
+			printGameResult(ChessGameResult::Checkmate);
+			break;
+		}
+
+		if (ChessUtils::isStalemate(game_.getBoard(), Color::White, game_.getHalfMoveClock()) || ChessUtils::isStalemate(game_.getBoard(), Color::Black, game_.getHalfMoveClock()))
+		{
+			printGameResult(ChessGameResult::Stalemate);
+			break;
+		}
 	}
 }

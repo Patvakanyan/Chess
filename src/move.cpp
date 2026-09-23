@@ -1,6 +1,6 @@
 #include "chess/move.hpp"
 
-Move::Move(const Position &from, const Position &to) : from_(from), to_(to), halfMoveClock_(0) {}
+Move::Move(const Position &from, const Position &to) : from_(from), to_(to) {}
 
 const Position &Move::getFrom() const
 {
@@ -10,11 +10,6 @@ const Position &Move::getFrom() const
 const Position &Move::getTo() const
 {
 	return to_;
-}
-
-size_t Move::getHalfMoveClock() const
-{
-	return halfMoveClock_;
 }
 
 void Move::setFrom(const Position &from)
@@ -27,9 +22,27 @@ void Move::setTo(const Position &to)
 	to_ = to;
 }
 
-void Move::setHalfMoveClock()
+void Move::setPieceType(Piece *piece)
 {
-	halfMoveClock_ = 0;
+	if (dynamic_cast<Pawn *>(piece))
+		pieceType_ = PieceType::PAWN;
+	else if (dynamic_cast<Rook *>(piece))
+		pieceType_ = PieceType::ROOK;
+	else if (dynamic_cast<Knight *>(piece))
+		pieceType_ = PieceType::KNIGHT;
+	else if (dynamic_cast<Bishop *>(piece))
+		pieceType_ = PieceType::BISHOP;
+	else if (dynamic_cast<Queen *>(piece))
+		pieceType_ = PieceType::QUEEN;
+	else if (dynamic_cast<King *>(piece))
+		pieceType_ = PieceType::KING;
+	else
+		throw std::invalid_argument("Unknown piece type.");
+}
+
+PieceType Move::getPieceType() const
+{
+	return pieceType_;
 }
 
 void Move::makeMove(Board &board)
@@ -55,27 +68,24 @@ void Move::makeMove(Board &board)
 	toSquare->setPiece(pieceToMove);
 	fromSquare->setPiece(nullptr);
 
-	if (ChessUtils::isInCheck(board, pieceToMove->getColor()))
+	if (ChessUtils::isInCheck(board, pieceToMove->getColor()) )
 	{
 		toSquare->setPiece(capturedPiece);
 		fromSquare->setPiece(pieceToMove);
 		throw InvalidMoveException("Move puts your king in check.");
 	}
-
 	pieceToMove->addHasMoved();
-
-	const bool movedPawn = dynamic_cast<Pawn *>(pieceToMove) != nullptr;
-	const bool capturedAny = capturedPiece != nullptr;
-
-	if (movedPawn || capturedAny)
-		halfMoveClock_ = 0;
-	else
-		halfMoveClock_++;
-
+	try
+	{
+		setPieceType(pieceToMove);
+	}
+	catch (const std::invalid_argument &e)
+	{
+		throw InvalidMoveException("Unknown piece type.");
+	}
 	if (capturedPiece != nullptr)
 		delete capturedPiece;
 }
-
 
 std::string Move::toString() const
 {

@@ -2,7 +2,7 @@
 
 #include "chess/position.hpp"
 #include "chess/piece.hpp"
-#include "chess/color.hpp"
+#include "chess/utils/color.hpp"
 
 class Square
 {

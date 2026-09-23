@@ -3,7 +3,7 @@
 #include "chess/piece.hpp"
 #include "chess/position.hpp"
 #include "chess/board.hpp"
-#include "chess/chessUtils.hpp"
+#include "chess/utils/chessUtils.hpp"
 #include <cmath>
 
 class Board;

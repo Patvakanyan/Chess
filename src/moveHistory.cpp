@@ -1,13 +1,32 @@
 #include "chess/moveHistory.hpp"
 
+MoveHistory::MoveHistory() : halfMoveClock_(0) {}
+
+int MoveHistory::getHalfMoveClock() const
+{
+	return halfMoveClock_;
+}
+
 const std::vector<Move> &MoveHistory::getMoves() const
 {
 	return moves_;
 }
 
+void MoveHistory::setHalfMoveClock()
+{
+	Move lastMove = moves_.back();
+	PieceType pieceToMove = lastMove.getPieceType();
+	if (pieceToMove == PieceType::PAWN)
+		halfMoveClock_ = 0;
+	else
+		halfMoveClock_++;
+}
+
 void MoveHistory::addMove(const Move &move)
 {
+
 	moves_.push_back(move);
+	setHalfMoveClock();
 }
 
 bool MoveHistory::undoMove(Board &board)

@@ -1,4 +1,4 @@
-#include "chess/chessUtils.hpp"
+#include "chess/utils/chessUtils.hpp"
 
 Position ChessUtils::findKing(const Board &board, Color color)
 {
@@ -210,7 +210,9 @@ bool ChessUtils::isCheckmate(Board &board, Color color)
 	return isInCheck(board, color) && !hasLegalMoves(board, color);
 }
 
-bool ChessUtils::isStalemate(Board &board, Color color)
+bool ChessUtils::isStalemate(Board &board, Color color, int halfMoveClock)
 {
+	if (halfMoveClock >= 50)
+		return true;
 	return !isInCheck(board, color) && !hasLegalMoves(board, color);
 }

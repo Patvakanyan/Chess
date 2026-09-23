@@ -2,7 +2,7 @@
 
 #include <vector>
 #include "chess/position.hpp"
-#include "chess/color.hpp"
+#include "chess/utils/color.hpp"
 
 class Board;
 
