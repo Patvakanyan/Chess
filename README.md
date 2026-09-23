@@ -1,55 +1,59 @@
-# Chess
+# Chess Engine
 
-An object-oriented chess project developed as a C++ term paper. The project
-builds the core domain model for a chess game, with pieces, board coordinates,
-and piece colors represented as separate types.
+A C++ chess project built around an object-oriented board model, piece logic, and a terminal-based game flow. The codebase includes board state management, chess-piece rules, legal-move checks, and a small terminal user interface.
 
-## Project Status
+## Project status
 
-The codebase is currently laying the foundation for the game engine:
+This project is under active development and currently includes:
 
-- `Position` validates board coordinates in the range `0` through `7` and
-	supports coordinate arithmetic.
-- `Color` identifies the white and black sides.
-- `Piece` defines the common interface for chess pieces, including movement
-	validation and valid-move generation.
-- Piece types are represented by `Pawn`, `Bishop`, `Knight`, `Rook`, `Queen`,
-	and `King` classes.
-- `Board` and `Square` are reserved for the next stage of the implementation.
+- a board and square model
+- chess-piece abstractions and concrete piece types
+- position validation and coordinate handling
+- color tracking for both sides
+- move history and game state management
+- legal-move and check detection helpers
+- a terminal-based game loop
 
-Move rules, board state management, captures, check detection, and a playable
-interface are planned but are not implemented yet.
-
-## Repository Layout
+## Repository layout
 
 ```text
-include/  Public headers and shared domain types
-src/      C++ source files
-tests/    Test sources
-build/    Generated build output (ignored by Git)
+include/chess/    Public headers for the game model
+src/              C++ implementation files
+src/pieces/       Piece implementations
+src/exceptions/  Chess exception classes
+tests/            Automated check tests
+obj/              Generated object files
 ```
 
 ## Requirements
 
-- A C++ compiler with C++17 support
+- C++17-compatible compiler
 - GNU Make
 
-## Build and Test
+## Build and run
 
-```sh
-make       # Build the application when an entry point is available
-make test  # Build and run tests when test sources are available
-make run   # Run the application when an entry point is available
-make clean # Remove generated build output
+```bash
+make        # build the chess application
+make run    # build and run the program
+make test   # build and run the test suite
+make clean  # remove generated build files
+make re     # clean and rebuild everything
 ```
 
-At the current stage, `make` and `make run` report that no application source
-has been added, while `make test` reports that no tests have been added.
+## Running the game
 
-## Development Roadmap
+The main entry point is in `src/main.cpp` and launches a terminal-based chess game through the `Game` and `Terminal` classes.
 
-1. Implement the board and square representations.
-2. Complete movement rules for every piece.
-3. Add captures, turn handling, and legal-move validation.
-4. Add check, checkmate, stalemate, castling, promotion, and en passant.
-5. Create automated tests and a command-line game interface.
+## Testing
+
+The project includes a basic test program in `tests/chessUtils_test.cpp` covering logic such as:
+
+- check detection
+- rook/bishop/queen/knight/pawn/king attack checks
+- blocked attacks
+- checkmate detection
+- stalemate detection
+
+## Notes
+
+The project is structured as a chess engine and game scaffolding rather than a full production-ready chess application. Features such as full move legality, castling, en passant, promotion, and some edge-case rule handling may still be incomplete depending on the current branch state.
