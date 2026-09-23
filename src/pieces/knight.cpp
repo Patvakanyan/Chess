@@ -2,6 +2,10 @@
 
 Knight::Knight(Color color) : Piece(color) {}
 
+PieceType Knight::getType() const
+{
+	return PieceType::KNIGHT;
+}
 
 std::vector <Position> Knight::getValidMoves(const Position currentPosition, const Board &board) const
 {

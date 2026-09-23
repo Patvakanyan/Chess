@@ -7,5 +7,6 @@ enum class PieceType
 	KNIGHT,
 	BISHOP,
 	QUEEN,
-	KING
+	KING,
+	NONE
 };

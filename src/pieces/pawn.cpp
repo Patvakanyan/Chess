@@ -2,6 +2,11 @@
 
 Pawn::Pawn(Color color) : Piece(color) {}
 
+PieceType Pawn::getType() const
+{
+	return PieceType::PAWN;
+}
+
 std::vector<Position> Pawn::getValidMoves(const Position currentPosition, const Board &board) const
 {
 	std::vector<Position> validMoves;

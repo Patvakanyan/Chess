@@ -3,6 +3,7 @@
 #include <vector>
 #include "chess/position.hpp"
 #include "chess/utils/color.hpp"
+#include "chess/utils/enumPiece.hpp"
 
 class Board;
 
@@ -25,5 +26,6 @@ public:
 	Color getColor() const;
 	bool isValidMove(const Position currentPosition,const Position newPosition, const Board &board) const;
 
+	virtual PieceType getType() const = 0;
 	virtual std::vector<Position> getValidMoves(const Position currentPosition, const Board &board) const = 0;
 };

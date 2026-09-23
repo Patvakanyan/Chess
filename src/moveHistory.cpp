@@ -40,7 +40,43 @@ bool MoveHistory::undoMove(Board &board)
 	std::cout << "Undoing move: " << move.toString() << std::endl;
 	Piece *tmpPiece = board[move.getFrom().getX()][move.getFrom().getY()].getPiece();
 	board[move.getTo().getX()][move.getTo().getY()].setPiece(tmpPiece);
-	board[move.getFrom().getX()][move.getFrom().getY()].setPiece(nullptr);
+	if (move.getPieceType() == PieceType::PAWN)
+		halfMoveClock_ = 0;
+	else
+		halfMoveClock_--;
+	if (move.getCapturedPieceType() != PieceType::NONE)
+	{
+		Piece *capturedPiece = nullptr;
+		Color capturedPieceColor = (tmpPiece->getColor() == Color::White) ? Color::Black : Color::White;
+		switch (move.getCapturedPieceType())
+		{
+		case PieceType::PAWN:
+			capturedPiece = new Pawn(capturedPieceColor);
+			break;
+		case PieceType::ROOK:
+			capturedPiece = new Rook(capturedPieceColor);
+			break;
+		case PieceType::KNIGHT:
+			capturedPiece = new Knight(capturedPieceColor);
+			break;
+		case PieceType::BISHOP:
+			capturedPiece = new Bishop(capturedPieceColor);
+			break;
+		case PieceType::QUEEN:
+			capturedPiece = new Queen(capturedPieceColor);
+			break;
+		case PieceType::KING:
+			capturedPiece = new King(capturedPieceColor);
+			break;
+		default:
+			throw std::invalid_argument("Unknown captured piece type.");
+		}
+		board[move.getFrom().getX()][move.getFrom().getY()].setPiece(capturedPiece);
+	}
+	else
+	{
+		board[move.getFrom().getX()][move.getFrom().getY()].setPiece(nullptr);
+	}
 	moves_.pop_back();
 	Piece *pieceToMove = board[move.getTo().getX()][move.getTo().getY()].getPiece();
 	if (pieceToMove != nullptr)

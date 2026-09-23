@@ -1,5 +1,4 @@
 #pragma once
-
 #include "chess/board.hpp"
 #include "chess/utils/color.hpp"
 #include "chess/position.hpp"

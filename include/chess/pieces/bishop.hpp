@@ -4,14 +4,15 @@
 #include "chess/position.hpp"
 #include "chess/board.hpp"
 #include "chess/utils/chessUtils.hpp"
+#include "chess/utils/enumPiece.hpp"
 #include <cmath>
 
-class Board;
 
 class Bishop : public Piece
 {
 public:
 	Bishop(Color color);
 
+	PieceType getType() const override;
 	std::vector<Position> getValidMoves(const Position currentPosition, const Board &board) const override;
 };

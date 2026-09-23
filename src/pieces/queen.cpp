@@ -2,6 +2,11 @@
 
 Queen::Queen(Color color) : Piece(color) {}
 
+PieceType Queen::getType() const
+{
+	return PieceType::QUEEN;
+}
+
 std::vector<Position> Queen::getValidMoves(Position currentPosition, const Board &board) const
 {
 	std::vector<Position> validMoves;

@@ -3,6 +3,10 @@
 
 Bishop::Bishop(Color color) : Piece(color) {}
 
+PieceType Bishop::getType() const
+{
+	return PieceType::BISHOP;
+}
 
 std::vector <Position> Bishop::getValidMoves(const Position currentPosition, const Board &board) const
 {

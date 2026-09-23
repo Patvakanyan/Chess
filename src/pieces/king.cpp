@@ -1,6 +1,11 @@
 #include "chess/pieces/king.hpp"
 King::King(Color color) : Piece(color) {}
 
+PieceType King::getType() const
+{
+	return PieceType::KING;
+}
+
 std::vector<Position> King::getValidMoves(const Position currentPosition, const Board &board) const
 {
 	std::vector<Position> validMoves;

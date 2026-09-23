@@ -52,29 +52,3 @@ void Board::initializeBoard()
 }
 
 
-
-void Board::printPieceTypes(const Position &position) const
-{
-	const Square &square = squares_[position.getX()][position.getY()];
-	if (square.isEmpty())
-	{
-		std::cout << ". ";
-		return;
-	}
-
-	const Piece *piece = square.getPiece();
-	char pieceChar = '?';
-	if (dynamic_cast<const King *>(piece))
-		pieceChar = 'K';
-	else if (dynamic_cast<const Queen *>(piece))
-		pieceChar = 'Q';
-	else if (dynamic_cast<const Rook *>(piece))
-		pieceChar = 'R';
-	else if (dynamic_cast<const Bishop *>(piece))
-		pieceChar = 'B';
-	else if (dynamic_cast<const Knight *>(piece))
-		pieceChar = 'N';
-	else if (dynamic_cast<const Pawn *>(piece))
-		pieceChar = 'P';
-	std::cout << pieceChar << " ";
-}

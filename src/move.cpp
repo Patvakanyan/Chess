@@ -1,6 +1,6 @@
 #include "chess/move.hpp"
 
-Move::Move(const Position &from, const Position &to) : from_(from), to_(to) {}
+Move::Move(const Position &from, const Position &to) : from_(from), to_(to), pieceType_(PieceType::NONE), capturedPieceType_(PieceType::NONE) {}
 
 const Position &Move::getFrom() const
 {
@@ -45,6 +45,11 @@ PieceType Move::getPieceType() const
 	return pieceType_;
 }
 
+PieceType Move::getCapturedPieceType() const
+{
+	return capturedPieceType_;
+}
+
 void Move::makeMove(Board &board)
 {
 	if (!board.isValidPosition(from_) || !board.isValidPosition(to_))
@@ -65,10 +70,18 @@ void Move::makeMove(Board &board)
 
 	Piece *capturedPiece = toSquare->getPiece();
 
+	if (capturedPiece != nullptr)
+	{
+		capturedPieceType_ = capturedPiece->getType();
+	}
+	else
+	{
+		capturedPieceType_ = PieceType::NONE;
+	}
 	toSquare->setPiece(pieceToMove);
 	fromSquare->setPiece(nullptr);
 
-	if (ChessUtils::isInCheck(board, pieceToMove->getColor()) )
+	if (ChessUtils::isInCheck(board, pieceToMove->getColor()))
 	{
 		toSquare->setPiece(capturedPiece);
 		fromSquare->setPiece(pieceToMove);

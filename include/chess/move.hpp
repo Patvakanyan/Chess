@@ -22,14 +22,20 @@ private:
 	Position to_;
 	PieceType pieceType_;
 
+	PieceType capturedPieceType_;
 	void setPieceType(Piece *piece);
 
 public:
 	Move() = default;
 	Move(const Position &from, const Position &to);
+
+
 	void makeMove(Board &board);
+
 	const Position &getFrom() const;
 	const Position &getTo() const;
+	PieceType getCapturedPieceType() const;
+	
 	PieceType getPieceType() const;
 	std::string toString() const;
 	void setFrom(const Position &from);

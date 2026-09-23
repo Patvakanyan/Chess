@@ -4,6 +4,7 @@
 #include "chess/utils/color.hpp"
 #include "chess/move.hpp"
 
+
 class ChessUtils
 {
 public:

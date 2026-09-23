@@ -2,7 +2,10 @@
 
 Rook::Rook(Color color) : Piece(color) {}
 
-
+PieceType Rook::getType() const
+{
+	return PieceType::ROOK;
+}
 
 std::vector<Position> Rook::getValidMoves(const Position currentPosition, const Board &board) const
 {
