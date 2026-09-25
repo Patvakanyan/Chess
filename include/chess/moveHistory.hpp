@@ -23,6 +23,7 @@ public:
 	~MoveHistory() = default;
 
 	int getHalfMoveClock() const;
+	void clear();
 	void addMove(const Move &move);
 	bool undoMove(Board &board);
 	const std::vector<Move> &getMoves() const;

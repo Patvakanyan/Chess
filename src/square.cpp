@@ -20,7 +20,16 @@ Piece *Square::getPiece() const
 
 void Square::setPiece(Piece *piece)
 {
+	if (piece_ != piece)
+		delete piece_;
 	piece_ = piece;
+}
+
+Piece *Square::releasePiece()
+{
+	Piece *piece = piece_;
+	piece_ = nullptr;
+	return piece;
 }
 
 bool Square::isEmpty() const

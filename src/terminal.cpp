@@ -159,7 +159,13 @@ void Terminal::start()
 			break;
 		}
 
-		if (ChessUtils::isStalemate(game_.getBoard(), Color::White, game_.getHalfMoveClock()) || ChessUtils::isStalemate(game_.getBoard(), Color::Black, game_.getHalfMoveClock()))
+		if (ChessUtils::isFiftyMoveRuleDraw(game_.getHalfMoveClock()))
+		{
+			printGameResult(ChessGameResult::Draw);
+			break;
+		}
+
+		if (ChessUtils::isStalemate(game_.getBoard(), Color::White) || ChessUtils::isStalemate(game_.getBoard(), Color::Black))
 		{
 			printGameResult(ChessGameResult::Stalemate);
 			break;

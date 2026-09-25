@@ -7,6 +7,12 @@ int MoveHistory::getHalfMoveClock() const
 	return halfMoveClock_;
 }
 
+void MoveHistory::clear()
+{
+	moves_.clear();
+	halfMoveClock_ = 0;
+}
+
 const std::vector<Move> &MoveHistory::getMoves() const
 {
 	return moves_;
@@ -16,7 +22,7 @@ void MoveHistory::setHalfMoveClock()
 {
 	Move lastMove = moves_.back();
 	PieceType pieceToMove = lastMove.getPieceType();
-	if (pieceToMove == PieceType::PAWN)
+	if (pieceToMove == PieceType::PAWN || lastMove.getCapturedPieceType() != PieceType::NONE)
 		halfMoveClock_ = 0;
 	else
 		halfMoveClock_++;
@@ -38,7 +44,7 @@ bool MoveHistory::undoMove(Board &board)
 	move.setFrom(move.getTo());
 	move.setTo(tmp);
 	std::cout << "Undoing move: " << move.toString() << std::endl;
-	Piece *tmpPiece = board[move.getFrom().getX()][move.getFrom().getY()].getPiece();
+	Piece *tmpPiece = board[move.getFrom().getX()][move.getFrom().getY()].releasePiece();
 	board[move.getTo().getX()][move.getTo().getY()].setPiece(tmpPiece);
 	if (move.getPieceType() == PieceType::PAWN)
 		halfMoveClock_ = 0;
@@ -71,11 +77,9 @@ bool MoveHistory::undoMove(Board &board)
 		default:
 			throw std::invalid_argument("Unknown captured piece type.");
 		}
+		for (size_t moveCount = 0; moveCount < move.getCapturedPieceHasMoved(); ++moveCount)
+			capturedPiece->addHasMoved();
 		board[move.getFrom().getX()][move.getFrom().getY()].setPiece(capturedPiece);
-	}
-	else
-	{
-		board[move.getFrom().getX()][move.getFrom().getY()].setPiece(nullptr);
 	}
 	moves_.pop_back();
 	Piece *pieceToMove = board[move.getTo().getX()][move.getTo().getY()].getPiece();

@@ -35,7 +35,7 @@ Piece *Board::removePiece(const Position &position)
 {
 	Square *square = &squares_[position.getX()][position.getY()];
 	Piece *removedPiece = square->getPiece();
-	square->setPiece(nullptr);
+	square->releasePiece();
 	return removedPiece;
 }
 
@@ -46,7 +46,8 @@ void Board::initializeBoard()
 		for (int j = 0; j < 8; ++j)
 		{
 			Color squareColor = ((i + j) % 2 == 0) ? Color::White : Color::Black;
-			squares_[i][j] = Square(nullptr, squareColor);
+			squares_[i][j].setPiece(nullptr);
+			squares_[i][j].setColor(squareColor);
 		}
 	}
 }

@@ -190,12 +190,17 @@ bool ChessUtils::hasLegalMoves(Board &board, Color color)
 				Square *fromSquare = &board[currentPos.getX()][currentPos.getY()];
 				Square *toSquare = &board[newPos.getX()][newPos.getY()];
 				Piece *capturedPiece = toSquare->getPiece();
+				if (capturedPiece != nullptr && capturedPiece->getType() == PieceType::KING)
+					continue;
+
+				capturedPiece = toSquare->releasePiece();
+				fromSquare->releasePiece();
 				toSquare->setPiece(piece);
-				fromSquare->setPiece(nullptr);
 				piece->addHasMoved();
 				bool legal = !isInCheck(board, color);
-				toSquare->setPiece(capturedPiece);
+				toSquare->releasePiece();
 				fromSquare->setPiece(piece);
+				toSquare->setPiece(capturedPiece);
 				piece->subtractHasMoved();
 				if (legal)
 					return true;
@@ -210,9 +215,12 @@ bool ChessUtils::isCheckmate(Board &board, Color color)
 	return isInCheck(board, color) && !hasLegalMoves(board, color);
 }
 
-bool ChessUtils::isStalemate(Board &board, Color color, int halfMoveClock)
+bool ChessUtils::isStalemate(Board &board, Color color)
 {
-	if (halfMoveClock >= 50)
-		return true;
 	return !isInCheck(board, color) && !hasLegalMoves(board, color);
+}
+
+bool ChessUtils::isFiftyMoveRuleDraw(int halfMoveClock)
+{
+	return halfMoveClock >= 100;
 }

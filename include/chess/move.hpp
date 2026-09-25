@@ -23,6 +23,7 @@ private:
 	PieceType pieceType_;
 
 	PieceType capturedPieceType_;
+	size_t capturedPieceHasMoved_;
 	void setPieceType(Piece *piece);
 
 public:
@@ -35,6 +36,7 @@ public:
 	const Position &getFrom() const;
 	const Position &getTo() const;
 	PieceType getCapturedPieceType() const;
+	size_t getCapturedPieceHasMoved() const;
 	
 	PieceType getPieceType() const;
 	std::string toString() const;

@@ -4,6 +4,8 @@
 #include "chess/utils/color.hpp"
 #include "chess/move.hpp"
 
+#include <iostream>
+#include <string>
 
 class ChessUtils
 {
@@ -21,5 +23,6 @@ public:
 	static Position findKing(const Board &board, Color color);
 	static bool isInCheck(const Board &board, Color color);
 	static bool isCheckmate(Board &board, Color color);
-	static bool isStalemate(Board &board, Color color, int halfMoveClock = 0);
+	static bool isStalemate(Board &board, Color color);
+	static bool isFiftyMoveRuleDraw(int halfMoveClock);
 };

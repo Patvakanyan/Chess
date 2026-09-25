@@ -15,10 +15,11 @@ public:
 	~Square();
 
 	Square(const Square &other) = delete;
-	Square &operator=(const Square &other) = default;
+	Square &operator=(const Square &other) = delete;
 
 	Piece *getPiece() const;
 	void setPiece(Piece *piece);
+	Piece *releasePiece();
 	void setColor(Color color);
 
 	bool isEmpty() const;

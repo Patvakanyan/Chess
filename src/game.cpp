@@ -8,7 +8,6 @@ Board &Game::getBoard()
 {
 	return board_;
 }
-
 const Board &Game::getBoard() const
 {
 	return board_;
@@ -53,6 +52,7 @@ void Game::startGame(Color selectedColor)
 {
 	currentTurn_ = selectedColor;
 	gameOver_ = false;
+	moveHistory_.clear();
 	board_.initializeBoard();
 
 	prepareBoard();
@@ -122,9 +122,13 @@ void Game::printBoard() const
 void Game::makeMove(const Position &from, const Position &to)
 {
 	if (gameOver_)
-	{
 		throw std::runtime_error("Game is over. No more moves can be made.");
-	}
+
+	Piece *pieceToMove = board_[from.getX()][from.getY()].getPiece();
+	if (pieceToMove == nullptr)
+		throw EmptySquareException("No piece at the source position.");
+	else if (pieceToMove->getColor() != currentTurn_)
+		throw InvalidMoveException("It's not your turn to move.");
 	Move move(from, to);
 	try
 	{
@@ -138,15 +142,10 @@ void Game::makeMove(const Position &from, const Position &to)
 	{
 		throw InvalidPositionException("Invalid position: " + std::string(e.what()));
 	}
-	catch (const EmptySquareException &e)
-	{
-		throw EmptySquareException("Empty square: " + std::string(e.what()));
-	}
 	currentTurn_ = (currentTurn_ == Color::White) ? Color::Black : Color::White;
 	moveHistory_.addMove(move);
 	moveHistory_.printMoveHistory();
 }
-
 
 Color Game::getCurrentTurn() const
 {

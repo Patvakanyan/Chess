@@ -1,6 +1,6 @@
 #include "chess/move.hpp"
 
-Move::Move(const Position &from, const Position &to) : from_(from), to_(to), pieceType_(PieceType::NONE), capturedPieceType_(PieceType::NONE) {}
+Move::Move(const Position &from, const Position &to) : from_(from), to_(to), pieceType_(PieceType::NONE), capturedPieceType_(PieceType::NONE), capturedPieceHasMoved_(0) {}
 
 const Position &Move::getFrom() const
 {
@@ -50,6 +50,11 @@ PieceType Move::getCapturedPieceType() const
 	return capturedPieceType_;
 }
 
+size_t Move::getCapturedPieceHasMoved() const
+{
+	return capturedPieceHasMoved_;
+}
+
 void Move::makeMove(Board &board)
 {
 	if (!board.isValidPosition(from_) || !board.isValidPosition(to_))
@@ -59,8 +64,6 @@ void Move::makeMove(Board &board)
 	Square *toSquare = &board[to_.getX()][to_.getY()];
 
 	Piece *pieceToMove = fromSquare->getPiece();
-	if (pieceToMove == nullptr)
-		throw EmptySquareException("No piece at the source position.");
 
 	if (!toSquare->isEmpty() && toSquare->getPiece()->getColor() == pieceToMove->getColor())
 		throw InvalidMoveException("Destination is occupied by your own piece.");
@@ -70,21 +73,29 @@ void Move::makeMove(Board &board)
 
 	Piece *capturedPiece = toSquare->getPiece();
 
-	if (capturedPiece != nullptr)
+	if (capturedPiece != nullptr && capturedPiece->getType() != PieceType::KING)
 	{
 		capturedPieceType_ = capturedPiece->getType();
+		capturedPieceHasMoved_ = capturedPiece->getHasMoved();
+	}
+	else if (capturedPiece != nullptr && capturedPiece->getType() == PieceType::KING)
+	{
+		throw InvalidMoveException("Cannot capture the king.");
 	}
 	else
 	{
 		capturedPieceType_ = PieceType::NONE;
+		capturedPieceHasMoved_ = 0;
 	}
+	capturedPiece = toSquare->releasePiece();
+	fromSquare->releasePiece();
 	toSquare->setPiece(pieceToMove);
-	fromSquare->setPiece(nullptr);
 
 	if (ChessUtils::isInCheck(board, pieceToMove->getColor()))
 	{
-		toSquare->setPiece(capturedPiece);
+		toSquare->releasePiece();
 		fromSquare->setPiece(pieceToMove);
+		toSquare->setPiece(capturedPiece);
 		throw InvalidMoveException("Move puts your king in check.");
 	}
 	pieceToMove->addHasMoved();
