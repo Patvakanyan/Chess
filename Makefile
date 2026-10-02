@@ -1,15 +1,15 @@
-NAME := chess
-TEST_NAME := chess_tests
+NAME := Chess
+TEST_NAME := Chess_tests
 OBJ_DIR := obj
 
 CXX := c++
-CPPFLAGS := -Iinclude -Iinclude/chess
+CPPFLAGS := -Iinclude -Iinclude/Chess
 CXXFLAGS := -Wall -Wextra -Werror -std=c++17 -g3
 
 SRC := $(wildcard src/*.cpp src/pieces/*.cpp src/exceptions/*.cpp)
 OBJ := $(patsubst src/%.cpp,$(OBJ_DIR)/%.o,$(SRC))
-TEST_SRC := tests/chessUtils_test.cpp
-TEST_OBJ := $(OBJ_DIR)/tests/chessUtils_test.o
+TEST_SRC := tests/ChessUtils_test.cpp
+TEST_OBJ := $(OBJ_DIR)/tests/ChessUtils_test.o
 
 all: $(NAME)
 
@@ -23,7 +23,7 @@ $(OBJ_DIR)/%.o: src/%.cpp
 run: $(NAME)
 	./$(NAME)
 
-$(TEST_NAME): $(filter-out $(OBJ_DIR)/main.o,$(OBJ)) $(TEST_OBJ)
+$(TEST_NAME): $(filter-out $(OBJ_DIR)/Main.o,$(OBJ)) $(TEST_OBJ)
 	$(CXX) $^ -o $@
 
 $(TEST_OBJ): $(TEST_SRC)
