@@ -1,5 +1,9 @@
 # Chess Engine
 
+This directory contains the chess engine used by the repository's Qt GUI.
+Start with the [main project README](../README.md) for the complete
+repository build and application instructions.
+
 A C++ Chess project built around an object-oriented board model, piece logic, and a terminal-based game flow. The codebase includes board state management, Chess-piece rules, legal-move checks, and a small terminal user interface.
 
 ## Project status
@@ -17,12 +21,12 @@ This project is under active development and currently includes:
 ## Repository layout
 
 ```text
-include/Chess/    Public headers for the game model
+include/chess/     Public headers for the game model
 src/              C++ implementation files
 src/pieces/       Piece implementations
 src/exceptions/  Chess exception classes
 tests/            Automated check tests
-obj/              Generated object files
+obj/              Generated object files (not committed)
 ```
 
 ## Requirements
