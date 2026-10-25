@@ -1,2 +1,37 @@
+# CMake and Make build output
 build/
 obj/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+
+# Generated dependency files
+*.d
+
+# Compiled binaries and libraries
+Chess/Chess
+Chess/Chess_tests
+*.o
+*.a
+*.so
+*.dll
+*.exe
+
+# Qt and IDE user files
+.qtcreator/
+*.user
+*.user.*
+.idea/
+
+# Test and coverage output
+Testing/
+CTestTestfile.cmake
+*.gcda
+*.gcno
+*.gcov
+
+# OS/editor files
+.DS_Store
+*.swp
+*.swo
