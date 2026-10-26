@@ -7,12 +7,12 @@ Color Piece::getColor() const
 {
 	return color;
 }
-bool Piece::isValidMove(const Position currentPosition, const Position newPosition, const Board &board) const
+bool Piece::isValidMove(const Position currentPosition, const Position newPosition, const Board &board, CustomMoveType moveType) const
 {
 	if (currentPosition == newPosition)
 		return false;
 
-	for (const Position &pos : getValidMoves(currentPosition, board))
+	for (const Position &pos : getValidMoves(currentPosition, board, moveType))
 	{
 		if (pos == newPosition)
 			return true;

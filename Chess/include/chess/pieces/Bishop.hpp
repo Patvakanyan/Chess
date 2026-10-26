@@ -12,5 +12,5 @@ public:
 	Bishop(Color color);
 
 	PieceType getType() const override;
-	std::vector<Position> getValidMoves(const Position currentPosition, const Board &board) const override;
+	std::vector<Position> getValidMoves(const Position currentPosition, const Board &board, CustomMoveType moveType = CustomMoveType::NONE) const override;
 };

@@ -7,7 +7,7 @@ PieceType Knight::getType() const
 	return PieceType::KNIGHT;
 }
 
-std::vector <Position> Knight::getValidMoves(const Position currentPosition, const Board &board) const
+std::vector <Position> Knight::getValidMoves(const Position currentPosition, const Board &board, CustomMoveType) const
 {
 	std::vector<Position> validMoves;
 	int currentX = currentPosition.getX();

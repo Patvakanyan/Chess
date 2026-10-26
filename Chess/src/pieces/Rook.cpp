@@ -7,7 +7,7 @@ PieceType Rook::getType() const
 	return PieceType::ROOK;
 }
 
-std::vector<Position> Rook::getValidMoves(const Position currentPosition, const Board &board) const
+std::vector<Position> Rook::getValidMoves(const Position currentPosition, const Board &board, CustomMoveType) const
 {
 	std::vector<Position> validMoves;
 

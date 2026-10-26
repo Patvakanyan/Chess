@@ -67,8 +67,48 @@ std::vector<Position> GameController::legalMovesFrom(const Position &from)
 
 	const Color color = piece->getColor();
 
-	for (const Position &to : piece->getValidMoves(from, board))
+	struct CandidateMove
 	{
+		Position to;
+		bool enPassant;
+	};
+
+	std::vector<CandidateMove> candidates;
+	for (const Position &to : piece->getValidMoves(from, board))
+		candidates.push_back({to, false});
+
+	const Move *lastMove = m_game.getLastMove();
+	const int direction = color == Color::White ? -1 : 1;
+	const int enPassantRow = color == Color::White ? 3 : 4;
+	if (piece->getType() == PieceType::PAWN &&
+		lastMove != nullptr &&
+		from.getX() == enPassantRow)
+	{
+		for (const Position &to : piece->getValidMoves(from, board, CustomMoveType::EN_PASSANT))
+		{
+			const bool isDiagonalStep =
+				to.getX() == from.getX() + direction &&
+				std::abs(to.getY() - from.getY()) == 1;
+			const bool destinationIsEmpty = board[to.getX()][to.getY()].isEmpty();
+			const Position adjacentPosition(from.getX(), to.getY());
+			const Piece *adjacentPiece =
+				board[adjacentPosition.getX()][adjacentPosition.getY()].getPiece();
+			const bool capturesLastPawn =
+				lastMove->getPieceType() == PieceType::PAWN &&
+				lastMove->getTo() == adjacentPosition &&
+				lastMove->getFrom().getX() == from.getX() + 2 * direction &&
+				lastMove->getTo().getX() == from.getX();
+
+			if (isDiagonalStep && destinationIsEmpty && adjacentPiece != nullptr &&
+				adjacentPiece->getType() == PieceType::PAWN &&
+				adjacentPiece->getColor() != color && capturesLastPawn)
+				candidates.push_back({to, true});
+		}
+	}
+
+	for (const CandidateMove &candidate : candidates)
+	{
+		const Position &to = candidate.to;
 		Square &fromSquare = board[from.getX()][from.getY()];
 		Square &toSquare = board[to.getX()][to.getY()];
 
@@ -76,9 +116,12 @@ std::vector<Position> GameController::legalMovesFrom(const Position &from)
 			toSquare.getPiece()->getType() == PieceType::KING)
 			continue; // shouldn't happen, but never treat "capture the king" as legal
 
-		// Simulate the move, exactly as ChessUtils::hasLegalMoves does, then
-		// check whether it leaves the mover's own king in check.
-		std::unique_ptr<Piece> capturedPiece = toSquare.releasePiece();
+		// En passant captures the pawn beside the destination, not the
+		// destination square itself.
+		Square &captureSquare = candidate.enPassant
+			? board[from.getX()][to.getY()]
+			: toSquare;
+		std::unique_ptr<Piece> capturedPiece = captureSquare.releasePiece();
 		std::unique_ptr<Piece> movingPiece = fromSquare.releasePiece();
 		toSquare.setPiece(std::move(movingPiece));
 		piece->addHasMoved();
@@ -87,7 +130,7 @@ std::vector<Position> GameController::legalMovesFrom(const Position &from)
 
 		movingPiece = toSquare.releasePiece();
 		fromSquare.setPiece(std::move(movingPiece));
-		toSquare.setPiece(std::move(capturedPiece));
+		captureSquare.setPiece(std::move(capturedPiece));
 		piece->subtractHasMoved();
 
 		if (safe)

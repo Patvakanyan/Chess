@@ -19,7 +19,6 @@ public:
 	static bool isKnightAttacked(const Board &board, const Position &pos, Color color);
 	static bool isPawnAttacked(const Board &board, const Position &pos, Color color);
 	static bool isKingAttacked(const Board &board, const Position &pos, Color color);
-	static bool canEnPassant(const Board &board, Move lastMove, const Position &from, const Position &to, Color color);
 
 	static bool hasLegalMoves(Board &board, Color color, const Move *lastMove = nullptr);
 	static Position findKing(const Board &board, Color color);

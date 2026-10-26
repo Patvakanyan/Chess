@@ -14,7 +14,7 @@ Move::Move()
 Move::Move(const Position &from, const Position &to)
 	: from_(from), to_(to), pieceType_(PieceType::NONE),
 	  capturedPieceType_(PieceType::NONE), capturedPieceHasMoved_(0),
-	capturedPosition_(to), previousHalfMoveClock_(0)
+	  capturedPosition_(to), previousHalfMoveClock_(0)
 {
 }
 
@@ -86,13 +86,17 @@ void Move::setPreviousHalfMoveClock(int halfMoveClock)
 	previousHalfMoveClock_ = halfMoveClock;
 }
 
+#include <iostream>
 bool Move::isEnPassant(const Board &board, const Move *lastMove) const
 {
 	const Square *fromSquare = &board[from_.getX()][from_.getY()];
 	const Square *toSquare = &board[to_.getX()][to_.getY()];
+	const Square *captureSquare = &board[from_.getX()][to_.getY()];
+
 	if (lastMove == nullptr || fromSquare->isEmpty() || toSquare->getPiece() != nullptr)
 		return false;
-
+	if (!captureSquare->isEmpty() && captureSquare->getPiece()->getHasMoved() != 1)
+		return false;
 	const Piece *movingPiece = fromSquare->getPiece();
 	const int direction = movingPiece->getColor() == Color::White ? -1 : 1;
 	const int requiredRow = movingPiece->getColor() == Color::White ? 3 : 4;
@@ -120,8 +124,10 @@ void Move::validateMove(Board &board, Square *toSquare, Piece *pieceToMove,
 	if (!toSquare->isEmpty() && toSquare->getPiece()->getColor() == pieceToMove->getColor())
 		throw InvalidMoveException("Destination is occupied by your own piece.");
 
-	if (!enPassant && !pieceToMove->isValidMove(from_, to_, board))
+	if (!enPassant && !pieceToMove->isValidMove(from_, to_, board, CustomMoveType::NONE))
 		throw InvalidMoveException("Invalid move for the selected piece.");
+	else if (enPassant && !pieceToMove->isValidMove(from_, to_, board, CustomMoveType::EN_PASSANT))
+		throw InvalidMoveException("Invalid en passant move for the selected piece.");
 }
 
 void Move::applyMove(Board &board, Square *fromSquare, Square *toSquare,

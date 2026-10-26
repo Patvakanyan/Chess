@@ -8,7 +8,7 @@ PieceType Bishop::getType() const
 	return PieceType::BISHOP;
 }
 
-std::vector <Position> Bishop::getValidMoves(const Position currentPosition, const Board &board) const
+std::vector <Position> Bishop::getValidMoves(const Position currentPosition, const Board &board, CustomMoveType) const
 {
 	std::vector<Position> validMoves;
 	int currentX = currentPosition.getX();

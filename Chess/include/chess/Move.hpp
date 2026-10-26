@@ -18,6 +18,7 @@ private:
 	PieceType capturedPieceType_;
 	size_t capturedPieceHasMoved_;
 	Position capturedPosition_;
+	
 	int previousHalfMoveClock_;
 	void setPieceType(Piece *piece);
 	void validateMove(Board &board, Square *toSquare, Piece *pieceToMove,

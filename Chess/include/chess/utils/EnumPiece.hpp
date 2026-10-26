@@ -10,3 +10,12 @@ enum class PieceType
 	KING,
 	NONE
 };
+
+enum class CustomMoveType
+{
+	CASTLE_KINGSIDE,
+	CASTLE_QUEENSIDE,
+	EN_PASSANT,
+	PROMOTION,
+	NONE
+};

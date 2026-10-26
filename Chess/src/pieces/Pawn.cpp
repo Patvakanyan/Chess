@@ -7,7 +7,7 @@ PieceType Pawn::getType() const
 	return PieceType::PAWN;
 }
 
-std::vector<Position> Pawn::getValidMoves(const Position currentPosition, const Board &board) const
+std::vector<Position> Pawn::getValidMoves(const Position currentPosition, const Board &board, CustomMoveType moveType) const
 {
 	std::vector<Position> validMoves;
 	int currentX = currentPosition.getX();
@@ -32,7 +32,7 @@ std::vector<Position> Pawn::getValidMoves(const Position currentPosition, const 
 		{
 			if (!board[newRow][newColumn].isEmpty() && board[newRow][newColumn].getPiece()->getColor() != currentColor)
 				validMoves.emplace_back(newRow, newColumn);
-			if (currentX == enPassantRow && !board[currentX][newColumn].isEmpty() && board[currentX][newColumn].getPiece()->getType() == PieceType::PAWN && board[currentX][newColumn].getPiece()->getColor() != currentColor)
+			if (moveType == CustomMoveType::EN_PASSANT && currentX == enPassantRow && !board[currentX][newColumn].isEmpty() && board[currentX][newColumn].getPiece()->getType() == PieceType::PAWN && board[currentX][newColumn].getPiece()->getColor() != currentColor)
 				validMoves.emplace_back(newRow, newColumn);
 		}
 	}

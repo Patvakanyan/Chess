@@ -24,8 +24,8 @@ public:
 	void subtractHasMoved();
 
 	Color getColor() const;
-	bool isValidMove(const Position currentPosition,const Position newPosition, const Board &board) const;
+	bool isValidMove(const Position currentPosition,const Position newPosition, const Board &board, CustomMoveType moveType = CustomMoveType::NONE) const;
 
 	virtual PieceType getType() const = 0;
-	virtual std::vector<Position> getValidMoves(const Position currentPosition, const Board &board) const = 0;
+	virtual std::vector<Position> getValidMoves(const Position currentPosition, const Board &board, CustomMoveType moveType = CustomMoveType::NONE) const = 0;
 };

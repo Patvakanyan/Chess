@@ -7,7 +7,7 @@ PieceType Queen::getType() const
 	return PieceType::QUEEN;
 }
 
-std::vector<Position> Queen::getValidMoves(Position currentPosition, const Board &board) const
+std::vector<Position> Queen::getValidMoves(Position currentPosition, const Board &board, CustomMoveType) const
 {
 	std::vector<Position> validMoves;
 
