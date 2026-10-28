@@ -17,8 +17,22 @@ const std::vector<Move> &MoveHistory::getMoves() const
 {
 	return moves_;
 }
+void MoveHistory::setFullMoveNumber(int fullMoveNumber)
+{
+	fullMoveNumber_ = fullMoveNumber;
+}
 
-void MoveHistory::setHalfMoveClock()
+int MoveHistory::getFullMoveNumber() const
+{
+	return fullMoveNumber_;
+}
+
+void MoveHistory::setHalfMoveClock(int halfMoveClock)
+{
+	halfMoveClock_ = halfMoveClock;
+}
+
+void MoveHistory::halfMoveClockAndReset()
 {
 	Move lastMove = moves_.back();
 	PieceType pieceToMove = lastMove.getPieceType();
@@ -33,7 +47,7 @@ void MoveHistory::addMove(const Move &move)
 	Move recordedMove = move;
 	recordedMove.setPreviousHalfMoveClock(halfMoveClock_);
 	moves_.push_back(recordedMove);
-	setHalfMoveClock();
+	halfMoveClockAndReset();
 }
 
 std::unique_ptr<Piece> MoveHistory::createCapturedPiece(PieceType type, Color color) const
@@ -92,6 +106,18 @@ bool MoveHistory::undoMove(Board &board)
 	return true;
 }
 
+void MoveHistory::setFEN(const std::string &fen)
+{
+	if (fen.empty())
+		return;
+	FEN_ = fen;
+}
+
+const std::string &MoveHistory::getFEN() const
+{
+	return FEN_;
+}
+
 void MoveHistory::printMoveHistory() const
 {
 	if (moves_.empty())
@@ -106,4 +132,9 @@ void MoveHistory::printMoveHistory() const
 		const Move &move = moves_[i];
 		std::cout << i + 1 << ". " << move.getFrom().toString() << " -> " << move.getTo().toString() << std::endl;
 	}
+}
+
+void MoveHistory::addFullMoveNumber()
+{
+	fullMoveNumber_++;
 }

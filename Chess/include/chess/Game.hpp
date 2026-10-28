@@ -5,12 +5,9 @@
 #include "chess/Position.hpp"
 #include "chess/MoveHistory.hpp"
 #include "chess/Move.hpp"
-
-#include "chess/exceptions/EmptySquareException.hpp"
+#include "chess/exceptions/InvalidMoveException.hpp"
 #include "chess/exceptions/InvalidPositionException.hpp"
-
-
-#include <iostream>
+#include <string>
 
 class Game
 {
@@ -24,7 +21,7 @@ private:
 	void prepareBoard();
 
 public:
-	Game();
+	Game(std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 	Game(const Game &other) = delete;
 	Game &operator=(const Game &other) = delete;
 	Game(Game &&other) = delete;
@@ -34,6 +31,7 @@ public:
 	Board &getBoard();
 	const Board &getBoard() const;
 
+	void FENToBoard(const std::string &fen);
 	int getHalfMoveClock() const;
 	void startGame(Color selectedColor);
 	void makeMove(const Position &from, const Position &to);

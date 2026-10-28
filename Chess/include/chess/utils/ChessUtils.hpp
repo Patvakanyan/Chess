@@ -2,12 +2,14 @@
 
 #include "chess/Position.hpp"
 #include "chess/utils/Color.hpp"
-
+#include "chess/Board.hpp"
+#include "chess/MoveHistory.hpp"
 #include "chess/Move.hpp"
-
+#include <string>
+#include <sstream>
 
 class Move;
-
+class MoveHistory; 
 class ChessUtils
 {
 public:
@@ -23,7 +25,7 @@ public:
 	static bool hasLegalMoves(Board &board, Color color, const Move *lastMove = nullptr);
 	static Position findKing(const Board &board, Color color);
 
-	
+	static void FENToBoard(const std::string &fen, Board &board, Color &currentTurn, MoveHistory &moveHistory);
 	static bool isInCheck(const Board &board, Color color);
 
 

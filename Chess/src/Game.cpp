@@ -1,9 +1,9 @@
 #include "chess/Game.hpp"
 #include "chess/utils/ChessUtils.hpp"
 
-
-Game::Game() : moveHistory_(), currentTurn_(Color::White), gameOver_(false)
+Game::Game(const std::string fen) : board_(), moveHistory_(), currentTurn_(Color::White), gameOver_(false)
 {
+	moveHistory_.setFEN(fen);
 }
 
 Board &Game::getBoard()
@@ -15,6 +15,11 @@ const Board &Game::getBoard() const
 	return board_;
 }
 
+void Game::FENToBoard(const std::string &fen)
+{
+	ChessUtils::FENToBoard(fen, board_, currentTurn_, moveHistory_);
+}
+/*
 void Game::prepareBoard()
 {
 	board_.placePiece(std::make_unique<King>(Color::White), Position(7, 4));
@@ -38,7 +43,7 @@ void Game::prepareBoard()
 		board_.placePiece(std::make_unique<Pawn>(Color::White), Position(6, i));
 		board_.placePiece(std::make_unique<Pawn>(Color::Black), Position(1, i));
 	}
-}
+}*/
 
 void Game::undoMove()
 {
@@ -57,8 +62,7 @@ void Game::startGame(Color selectedColor)
 	gameOver_ = false;
 	moveHistory_.clear();
 	board_.initializeBoard();
-
-	prepareBoard();
+	ChessUtils::FENToBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", board_, currentTurn_, moveHistory_);
 }
 
 int Game::getHalfMoveClock() const
@@ -126,9 +130,9 @@ void Game::makeMove(const Position &from, const Position &to)
 	try
 	{
 		const Move *lastMove = moveHistory_.getMoves().empty()
-			? nullptr
-			: &moveHistory_.getMoves().back();
-		move.makeMove(board_,  lastMove);
+								   ? nullptr
+								   : &moveHistory_.getMoves().back();
+		move.makeMove(board_, lastMove);
 	}
 	catch (const InvalidMoveException &e)
 	{
@@ -142,13 +146,14 @@ void Game::makeMove(const Position &from, const Position &to)
 	moveHistory_.addMove(move);
 	moveHistory_.printMoveHistory();
 
+	if (currentTurn_ == Color::Black)
+		moveHistory_.addFullMoveNumber();
 	const Move *lastMove = &moveHistory_.getMoves().back();
 	if (ChessUtils::isCheckmate(board_, currentTurn_, lastMove) ||
 		ChessUtils::isStalemate(board_, currentTurn_, lastMove) ||
 		ChessUtils::isFiftyMoveRuleDraw(moveHistory_.getHalfMoveClock()))
 		gameOver_ = true;
 }
-
 
 Color Game::getCurrentTurn() const
 {

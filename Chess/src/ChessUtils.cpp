@@ -266,3 +266,78 @@ bool ChessUtils::isFiftyMoveRuleDraw(int halfMoveClock)
 {
 	return halfMoveClock >= 100;
 }
+
+void ChessUtils::FENToBoard(const std::string &fen, Board &board, Color &currentTurn, MoveHistory &moveHistory)
+{
+	std::cout << "Parsing FEN: " << fen << std::endl;
+	std::istringstream fenStream(fen);
+	std::string boardPart, turnPart, castlingPart, enPassantPart, halfMoveClockPart, fullMoveNumberPart;
+
+	if (!(fenStream >> boardPart >> turnPart >> castlingPart >> enPassantPart >> halfMoveClockPart >> fullMoveNumberPart))
+	{
+		throw std::invalid_argument("Invalid FEN string: " + fen);
+	}
+
+	for (size_t i = 0; i < 8; ++i)
+	{
+		for (size_t j = 0; j < 8; ++j)
+		{
+			board[i][j].setPiece(nullptr);
+		}
+	}
+
+	size_t row = 0;
+	size_t col = 0;
+	for (char c : boardPart)
+	{
+		if (c == '/')
+		{
+			++row;
+			col = 0;
+		}
+		else if (std::isdigit(c))
+		{
+			col += c - '0'; // Skip empty squares
+		}
+		else
+		{
+			Color color = std::isupper(c) ? Color::White : Color::Black;
+			PieceType type;
+			switch (std::tolower(c))
+			{
+			case 'p':
+				type = PieceType::PAWN;
+				break;
+			case 'r':
+				type = PieceType::ROOK;
+				break;
+			case 'n':
+				type = PieceType::KNIGHT;
+				break;
+			case 'b':
+				type = PieceType::BISHOP;
+				break;
+			case 'q':
+				type = PieceType::QUEEN;
+				break;
+			case 'k':
+				type = PieceType::KING;
+				break;
+			default:
+				throw std::invalid_argument("Invalid piece character in FEN: " + std::string(1, c));
+			}
+			board[row][col].setPiece(createPiece(type, color));
+			++col;
+		}
+	}
+
+	// Set the current turn based on the FEN string
+	currentTurn = (turnPart == "w") ? Color::White : Color::Black;
+
+	// Set the half-move clock and full-move number in the move
+	// history based on the FEN string
+	int halfMoveClock = std::stoi(halfMoveClockPart);
+	int fullMoveNumber = std::stoi(fullMoveNumberPart);
+	moveHistory.setHalfMoveClock(halfMoveClock);
+	moveHistory.setFullMoveNumber(fullMoveNumber);
+}
