@@ -19,6 +19,8 @@ public:
 
 	Piece(const Piece &other) = default;
 	Piece &operator=(const Piece &other) = default;
+	Piece(Piece &&other) noexcept;
+	Piece &operator=(Piece &&other) noexcept;
 	size_t getHasMoved() const;
 	void addHasMoved();
 	void subtractHasMoved();

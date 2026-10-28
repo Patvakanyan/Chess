@@ -21,6 +21,22 @@ bool Piece::isValidMove(const Position currentPosition, const Position newPositi
 	return false;
 }
 
+Piece::Piece(Piece &&other) noexcept : color(other.color), hasMoved_(other.hasMoved_)
+{
+	other.hasMoved_ = 0;
+}
+
+Piece &Piece::operator=(Piece &&other) noexcept
+{
+	if (this != &other)
+	{
+		color = other.color;
+		hasMoved_ = other.hasMoved_;
+		other.hasMoved_ = 0;
+	}
+	return *this;
+}
+
 void Piece::addHasMoved()
 {
 	hasMoved_++;

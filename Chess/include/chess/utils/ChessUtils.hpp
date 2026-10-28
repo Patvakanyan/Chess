@@ -22,8 +22,13 @@ public:
 
 	static bool hasLegalMoves(Board &board, Color color, const Move *lastMove = nullptr);
 	static Position findKing(const Board &board, Color color);
+
+	
 	static bool isInCheck(const Board &board, Color color);
+
+
 	static bool isCheckmate(Board &board, Color color, const Move *lastMove = nullptr);
+
 	static bool isStalemate(Board &board, Color color, const Move *lastMove = nullptr);
 	static bool isFiftyMoveRuleDraw(int halfMoveClock);
 };

@@ -25,6 +25,7 @@ const QColor kWhitePieceOutline(0x35, 0x28, 0x1d);
 const QColor kBlackPieceFill(0x24, 0x24, 0x24);
 const QColor kBlackPieceOutline(0xc8, 0xb9, 0x9c);
 const QColor kHighlightColor(120, 200, 140, 140);
+const QColor kCastleHighlightColor(245, 205, 55, 190);
 
 constexpr char kFiles[] = "abcdefgh";
 
@@ -207,24 +208,30 @@ void ChessScene::showPosition(const Board &board)
 			setPiece(row, column, board[row][column]);
 }
 
-void ChessScene::highlightSquares(const QVector<QPoint> &squares)
+void ChessScene::highlightSquares(const QVector<QPoint> &squares,
+								  const QVector<QPoint> &castleSquares)
 {
 	clearHighlights();
-	for (const QPoint &square : squares)
+	auto addHighlight = [this](const QPoint &square, const QColor &color)
 	{
 		const int column = square.x();
 		const int row = square.y();
 		if (row < 0 || row >= kBoardSize || column < 0 || column >= kBoardSize)
-			continue;
+			return;
 
 		const qreal margin = kSquareSize * 0.14;
 		auto *dot = addEllipse(column * kSquareSize + margin, row * kSquareSize + margin,
 							   kSquareSize - 2 * margin, kSquareSize - 2 * margin);
-		dot->setBrush(kHighlightColor);
+		dot->setBrush(color);
 		dot->setPen(Qt::NoPen);
 		dot->setZValue(ZHighlight);
 		m_highlightItems.push_back(dot);
-	}
+	};
+
+	for (const QPoint &square : squares)
+		addHighlight(square, kHighlightColor);
+	for (const QPoint &square : castleSquares)
+		addHighlight(square, kCastleHighlightColor);
 }
 
 void ChessScene::clearHighlights()

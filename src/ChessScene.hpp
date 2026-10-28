@@ -55,7 +55,8 @@ public:
 	std::optional<PieceView> pieceAt(int row, int column) const;
 
 	// Highlights a set of squares (e.g. legal move targets). x = column, y = row.
-	void highlightSquares(const QVector<QPoint> &squares);
+	void highlightSquares(const QVector<QPoint> &squares,
+						  const QVector<QPoint> &castleSquares = {});
 	void clearHighlights();
 
 	// The single place that maps a board square to scene coordinates.

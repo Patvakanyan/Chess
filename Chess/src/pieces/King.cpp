@@ -1,4 +1,5 @@
 #include "chess/pieces/King.hpp"
+#include <iostream>
 King::King(Color color) : Piece(color) {}
 
 PieceType King::getType() const
@@ -6,7 +7,7 @@ PieceType King::getType() const
 	return PieceType::KING;
 }
 
-std::vector<Position> King::getValidMoves(const Position currentPosition, const Board &board, CustomMoveType) const
+std::vector<Position> King::getValidMoves(const Position currentPosition, const Board &board, CustomMoveType type) const
 {
 	std::vector<Position> validMoves;
 	int currentX = currentPosition.getX();
@@ -31,10 +32,21 @@ std::vector<Position> King::getValidMoves(const Position currentPosition, const 
 		else
 		{
 			if (square.getPiece()->getColor() != this->getColor())
-			{
 				validMoves.push_back(newPos);
-			}
 		}
 	}
+	if (type == CustomMoveType::CASTLE_KINGSIDE || type == CustomMoveType::CASTLE_QUEENSIDE)
+	{
+		int row = currentX;
+		if (type == CustomMoveType::CASTLE_KINGSIDE)
+		{
+			validMoves.push_back(Position(row, currentY + 2));
+		}
+		else if (type == CustomMoveType::CASTLE_QUEENSIDE)
+		{
+			validMoves.push_back(Position(row, currentY - 2));
+		}
+	}
+
 	return validMoves;
 }
