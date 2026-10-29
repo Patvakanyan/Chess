@@ -173,6 +173,47 @@ bool ChessUtils::isInCheck(const Board &board, Color color)
 	return isSquareAttacked(board, kingPos, opponentColor);
 }
 
+std::string ChessUtils::getCastlingRights(const Board &board)
+{
+	std::string rights;
+
+	// Check White's castling rights
+	Piece *whiteKing = board[7][4].getPiece();
+	Piece *whiteKingsideRook = board[7][7].getPiece();
+	Piece *whiteQueensideRook = board[7][0].getPiece();
+
+	if (whiteKing && whiteKing->getType() == PieceType::KING && whiteKing->getHasMoved() == 0)
+	{
+		if (whiteKingsideRook && whiteKingsideRook->getType() == PieceType::ROOK && whiteKingsideRook->getHasMoved() == 0)
+		{
+			rights += 'K';
+		}
+		if (whiteQueensideRook && whiteQueensideRook->getType() == PieceType::ROOK && whiteQueensideRook->getHasMoved() == 0)
+		{
+			rights += 'Q';
+		}
+	}
+
+	// Check Black's castling rights
+	Piece *blackKing = board[0][4].getPiece();
+	Piece *blackKingsideRook = board[0][7].getPiece();
+	Piece *blackQueensideRook = board[0][0].getPiece();
+
+	if (blackKing && blackKing->getType() == PieceType::KING && blackKing->getHasMoved() == 0)
+	{
+		if (blackKingsideRook && blackKingsideRook->getType() == PieceType::ROOK && blackKingsideRook->getHasMoved() == 0)
+		{
+			rights += 'k';
+		}
+		if (blackQueensideRook && blackQueensideRook->getType() == PieceType::ROOK && blackQueensideRook->getHasMoved() == 0)
+		{
+			rights += 'q';
+		}
+	}
+
+	return rights.empty() ? "- -" : rights;
+}
+
 namespace
 {
 	std::unique_ptr<Piece> createPiece(PieceType type, Color color)

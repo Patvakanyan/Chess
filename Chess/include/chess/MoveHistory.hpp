@@ -27,6 +27,7 @@ private:
 	void halfMoveClockAndReset();
 	std::unique_ptr<Piece> createCapturedPiece(PieceType type, Color color) const;
 
+
 public:
 	MoveHistory();
 	MoveHistory(const MoveHistory &other) = delete;

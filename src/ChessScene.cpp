@@ -81,6 +81,7 @@ ChessScene::ChessScene(QObject *parent)
 	drawCoordinates();
 }
 
+
 QPointF ChessScene::squareCenter(int row, int column)
 {
 	return QPointF(column * kSquareSize + kSquareSize / 2.0,
@@ -255,4 +256,11 @@ void ChessScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 			emit squareClicked(row, column);
 	}
 	QGraphicsScene::mousePressEvent(event);
+}
+
+ChessScene::~ChessScene()
+{
+
+	clearHighlights();
+	clearPieces();
 }

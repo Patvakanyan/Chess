@@ -39,6 +39,7 @@ private:
 	void trySelect(const Position &clicked);
 	void refreshView();
 	void announceGameEndIfAny();
+	bool isGameFinished();
 	QString statusText() const;
 
 	Game m_game;

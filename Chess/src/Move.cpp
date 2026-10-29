@@ -188,6 +188,8 @@ void Move::validateMove(Board &board, Square *toSquare, Piece *pieceToMove,
 
 	if (!toSquare->isEmpty() && toSquare->getPiece()->getColor() == pieceToMove->getColor())
 		throw InvalidMoveException("Destination is occupied by your own piece.");
+	if (!toSquare->isEmpty() && toSquare->getPiece()->getType() == PieceType::KING)
+		throw InvalidMoveException("A king cannot be captured.");
 
 	if (type == CustomMoveType::NONE && !pieceToMove->isValidMove(from_, to_, board, CustomMoveType::NONE))
 		throw InvalidMoveException("Invalid move for the selected piece.");
@@ -281,6 +283,70 @@ void Move::makeMove(Board &board, const Move *lastMove)
 
 	validateMove(board, toSquare, pieceToMove, type);
 	applyMove(board, fromSquare, toSquare, pieceToMove, type);
+}
+
+void Move::undoMove(Board &board) const
+{
+	Square *fromSquare = &board[from_.getX()][from_.getY()];
+	Square *toSquare = &board[to_.getX()][to_.getY()];
+	std::unique_ptr<Piece> movingPiece = toSquare->releasePiece();
+	if (movingPiece == nullptr)
+		throw std::runtime_error("Cannot undo a move without a piece on its destination.");
+
+	const bool wasCastling =
+		movingPiece->getType() == PieceType::KING &&
+		from_.getY() == 4 &&
+		(to_.getY() == 2 || to_.getY() == 6);
+	movingPiece->subtractHasMoved();
+	fromSquare->setPiece(std::move(movingPiece));
+
+	if (wasCastling)
+	{
+		const int rookFromColumn = to_.getY() == 6 ? 5 : 3;
+		const int rookToColumn = to_.getY() == 6 ? 7 : 0;
+		std::unique_ptr<Piece> rook =
+			board[from_.getX()][rookFromColumn].releasePiece();
+		if (rook == nullptr)
+			throw std::runtime_error("Cannot undo castling without a rook.");
+		rook->subtractHasMoved();
+		board[from_.getX()][rookToColumn].setPiece(std::move(rook));
+	}
+
+	if (capturedPieceType_ != PieceType::NONE)
+	{
+		const Color movingColor = fromSquare->getPiece()->getColor();
+		const Color capturedColor =
+			movingColor == Color::White ? Color::Black : Color::White;
+		std::unique_ptr<Piece> capturedPiece;
+		switch (capturedPieceType_)
+		{
+		case PieceType::PAWN:
+			capturedPiece = std::make_unique<Pawn>(capturedColor);
+			break;
+		case PieceType::ROOK:
+			capturedPiece = std::make_unique<Rook>(capturedColor);
+			break;
+		case PieceType::KNIGHT:
+			capturedPiece = std::make_unique<Knight>(capturedColor);
+			break;
+		case PieceType::BISHOP:
+			capturedPiece = std::make_unique<Bishop>(capturedColor);
+			break;
+		case PieceType::QUEEN:
+			capturedPiece = std::make_unique<Queen>(capturedColor);
+			break;
+		case PieceType::KING:
+			capturedPiece = std::make_unique<King>(capturedColor);
+			break;
+		default:
+			throw std::runtime_error("Cannot restore an unknown captured piece.");
+		}
+
+		for (size_t count = 0; count < capturedPieceHasMoved_; ++count)
+			capturedPiece->addHasMoved();
+		board[capturedPosition_.getX()][capturedPosition_.getY()]
+			.setPiece(std::move(capturedPiece));
+	}
 }
 
 std::string Move::toString() const

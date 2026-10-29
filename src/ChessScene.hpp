@@ -14,8 +14,6 @@ class QGraphicsPathItem;
 class QGraphicsItem;
 class QGraphicsSceneMouseEvent;
 
-// Named PieceKind/PieceView (not PieceType/Piece) because the chess engine
-// this scene talks to already defines its own PieceType and Piece classes.
 enum class PieceKind
 {
 	King,
@@ -44,6 +42,7 @@ public:
 	using Board = std::array<std::array<std::optional<PieceView>, kBoardSize>, kBoardSize>;
 
 	explicit ChessScene(QObject *parent = nullptr);
+	~ChessScene() override;
 
 	// Redraws every piece to match the given position. row 0 is rank 8,
 	// column 0 is the a-file -- the same convention the chess engine uses,

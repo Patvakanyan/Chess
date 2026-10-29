@@ -79,7 +79,7 @@ bool MoveHistory::undoMove(Board &board)
 	Position tmp = move.getFrom();
 	move.setFrom(move.getTo());
 	move.setTo(tmp);
-	std::cout << "Undoing move: " << move.toString() << std::endl;
+
 	std::unique_ptr<Piece> tmpPiece =
 		board[move.getFrom().getX()][move.getFrom().getY()].releasePiece();
 	board[move.getTo().getX()][move.getTo().getY()].setPiece(std::move(tmpPiece));
@@ -137,4 +137,57 @@ void MoveHistory::printMoveHistory() const
 void MoveHistory::addFullMoveNumber()
 {
 	fullMoveNumber_++;
+}
+
+void MoveHistory::updateFEN(const Board &board, Color currentTurn, int halfMoveClock, int fullMoveNumber)
+{
+	if (moves_.empty())
+		return;
+
+	FEN_.clear();
+
+	for (size_t i = 0; i < 8; ++i)
+	{
+		int emptyCount = 0;
+
+		for (size_t j = 0; j < 8; ++j)
+		{
+			Piece *piece = board[i][j].getPiece();
+
+			if (piece == nullptr)
+			{
+				++emptyCount;
+			}
+			else
+			{
+				if (emptyCount > 0)
+				{
+					FEN_ += std::to_string(emptyCount);
+					emptyCount = 0;
+				}
+
+				char pieceChar = pieceTypeToChar(piece->getType());
+
+				if (piece->getColor() == Color::Black)
+					pieceChar = std::tolower(pieceChar);
+
+				FEN_ += pieceChar;
+			}
+		}
+
+		if (emptyCount > 0)
+			FEN_ += std::to_string(emptyCount);
+
+		if (i != 7)
+			FEN_ += '/';
+	}
+
+	FEN_ += (currentTurn == Color::White) ? " w " : " b ";
+	FEN_ += ChessUtils::getCastlingRights(board);
+	FEN_ += ' ';
+
+	FEN_ += std::to_string(halfMoveClock);
+	FEN_ += ' ';
+	FEN_ += std::to_string(fullMoveNumber);
+
 }

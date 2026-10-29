@@ -63,6 +63,7 @@ void Game::startGame(Color selectedColor)
 	moveHistory_.clear();
 	board_.initializeBoard();
 	ChessUtils::FENToBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", board_, currentTurn_, moveHistory_);
+	currentTurn_ = selectedColor;
 }
 
 int Game::getHalfMoveClock() const
@@ -144,7 +145,9 @@ void Game::makeMove(const Position &from, const Position &to)
 	}
 	currentTurn_ = (currentTurn_ == Color::White) ? Color::Black : Color::White;
 	moveHistory_.addMove(move);
+	moveHistory_.updateFEN(board_, currentTurn_, moveHistory_.getHalfMoveClock(), moveHistory_.getFullMoveNumber());
 	moveHistory_.printMoveHistory();
+	std::cout << "Current FEN: " << moveHistory_.getFEN() << std::endl;
 
 	if (currentTurn_ == Color::Black)
 		moveHistory_.addFullMoveNumber();

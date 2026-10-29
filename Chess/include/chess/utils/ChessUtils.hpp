@@ -9,7 +9,9 @@
 #include <sstream>
 
 class Move;
-class MoveHistory; 
+class MoveHistory;
+
+
 class ChessUtils
 {
 public:
@@ -29,8 +31,8 @@ public:
 	static bool isInCheck(const Board &board, Color color);
 
 
+	static std::string getCastlingRights(const Board &board);
 	static bool isCheckmate(Board &board, Color color, const Move *lastMove = nullptr);
-
 	static bool isStalemate(Board &board, Color color, const Move *lastMove = nullptr);
 	static bool isFiftyMoveRuleDraw(int halfMoveClock);
 };

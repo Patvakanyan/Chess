@@ -40,6 +40,9 @@ public:
 
 	const Position &getFrom() const;
 	const Position &getTo() const;
+
+	void undoMove(Board &board) const;
+
 	PieceType getCapturedPieceType() const;
 	size_t getCapturedPieceHasMoved() const;
 	const Position &getCapturedPosition() const;
