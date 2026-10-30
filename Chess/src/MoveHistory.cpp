@@ -93,8 +93,7 @@ bool MoveHistory::undoMove(Board &board)
 				: Color::White);
 		if (capturedPiece == nullptr)
 			throw std::runtime_error("Failed to create captured piece.");
-		for (size_t moveCount = 0; moveCount < move.getCapturedPieceHasMoved(); ++moveCount)
-			capturedPiece->addHasMoved();
+		capturedPiece->setHasMoved(move.getCapturedPieceHasMoved());
 		const Position &capturedPosition = move.getCapturedPosition();
 		board[capturedPosition.getX()][capturedPosition.getY()].setPiece(std::move(capturedPiece));
 	}
@@ -189,5 +188,4 @@ void MoveHistory::updateFEN(const Board &board, Color currentTurn, int halfMoveC
 	FEN_ += std::to_string(halfMoveClock);
 	FEN_ += ' ';
 	FEN_ += std::to_string(fullMoveNumber);
-
 }

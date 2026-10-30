@@ -14,9 +14,11 @@ TEST_SRC := tests/ChessUtils_test.cpp
 TEST_OBJ := $(OBJ_DIR)/tests/ChessUtils_test.o
 DEP := $(OBJ:.o=.d) $(TEST_OBJ:.o=.d)
 
--include $(DEP)
-
 all: $(NAME)
+
+.PHONY: all run makeval val test clean fclean re
+
+-include $(DEP)
 
 $(NAME): $(OBJ)
 	$(CXX) $(OBJ) -o $@
@@ -49,5 +51,3 @@ clean:
 fclean: clean
 
 re: fclean all
-
-.PHONY: all run makeval val test clean fclean re

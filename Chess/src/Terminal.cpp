@@ -23,6 +23,36 @@ void Terminal::printWelcomeMessage() const
 	}
 }
 
+PieceType Terminal::askPromotionPiece() const
+{
+	std::cout << "Pawn promotion! Choose a piece (Q, R, B, N): ";
+	std::string input;
+	while (true)
+	{
+		if (!std::getline(std::cin, input) || input.empty())
+		{
+			std::cout << "Invalid input. Please try again: ";
+			continue;
+		}
+
+		char choice = std::toupper(input[0]);
+		switch (choice)
+		{
+		case 'Q':
+			return PieceType::QUEEN;
+		case 'R':
+			return PieceType::ROOK;
+		case 'B':
+			return PieceType::BISHOP;
+		case 'N':
+			return PieceType::KNIGHT;
+		default:
+			std::cout << "Invalid choice. Please choose Q, R, B, or N: ";
+			break;
+		}
+	}
+}
+
 void Terminal::printCurrentTurn() const
 {
 	Color currentTurn = game_.getCurrentTurn();
@@ -129,7 +159,13 @@ void Terminal::start()
 		{
 			Position from(fromInput);
 			Position to(toInput);
-			game_.makeMove(from, to);
+			if (game_.isPromotionMove(from, to))
+			{
+				PieceType promotionType = askPromotionPiece();
+				game_.makeMove(from, to, promotionType);
+			}
+			else
+				game_.makeMove(from, to);
 		}
 		catch (const InvalidMoveException &e)
 		{
@@ -155,6 +191,7 @@ void Terminal::start()
 			printInvalidMoveMessage();
 			continue;
 		}
+
 		Color sideToMove = game_.getCurrentTurn();
 		const Move *lastMove = game_.getLastMove();
 		if (ChessUtils::isCheckmate(game_.getBoard(), sideToMove, lastMove))

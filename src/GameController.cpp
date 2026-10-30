@@ -37,9 +37,15 @@ namespace
 						  const Move *lastMove)
 	{
 		Move simulation(from, to);
+		const Piece *piece = board[from.getX()][from.getY()].getPiece();
+		const PieceType promotionType =
+			piece != nullptr && piece->getType() == PieceType::PAWN &&
+					(to.getX() == 0 || to.getX() == 7)
+				? PieceType::QUEEN
+				: PieceType::NONE;
 		try
 		{
-			simulation.makeMove(board, lastMove);
+			simulation.makeMove(board, lastMove, promotionType);
 		}
 		catch (const InvalidMoveException &)
 		{
@@ -127,7 +133,15 @@ void GameController::onSquareClicked(int row, int column)
 	{
 		try
 		{
-			m_game.makeMove(*m_selected, clicked);
+			const Board &board = m_game.getBoard();
+			const Piece *piece =
+				board[m_selected->getX()][m_selected->getY()].getPiece();
+			const PieceType promotionType =
+				piece != nullptr && piece->getType() == PieceType::PAWN &&
+						(clicked.getX() == 0 || clicked.getX() == 7)
+					? PieceType::QUEEN
+					: PieceType::NONE;
+			m_game.makeMove(*m_selected, clicked, promotionType);
 			m_selected.reset();
 			m_scene->clearHighlights();
 			refreshView();
@@ -156,7 +170,7 @@ void GameController::trySelect(const Position &clicked)
 	if (square.isEmpty() || square.getPiece()->getColor() != m_game.getCurrentTurn())
 		return;
 
-	const Piece *piece = square.getPiece();
+	const PieceType pieceType = square.getPiece()->getType();
 	m_selected = clicked;
 
 	QVector<QPoint> targets;
@@ -164,7 +178,7 @@ void GameController::trySelect(const Position &clicked)
 	for (const Position &to : legalMovesFrom(clicked))
 	{
 		const QPoint target(to.getY(), to.getX()); // QPoint: x = column, y = row
-		if (piece->getType() == PieceType::KING &&
+		if (pieceType == PieceType::KING &&
 			std::abs(to.getY() - clicked.getY()) == 2)
 			castleTargets.push_back(target);
 		else

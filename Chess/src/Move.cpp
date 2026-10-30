@@ -9,13 +9,14 @@ Move::Move()
 	  capturedPieceType_(PieceType::NONE),
 	  capturedPieceHasMoved_(0),
 	  capturedPosition_(),
+	  movingPieceHasMoved_(0),
 	  previousHalfMoveClock_(0)
 {
 }
 Move::Move(const Position &from, const Position &to)
 	: from_(from), to_(to), pieceType_(PieceType::NONE),
 	  capturedPieceType_(PieceType::NONE), capturedPieceHasMoved_(0),
-	  capturedPosition_(to), previousHalfMoveClock_(0)
+	  capturedPosition_(to), movingPieceHasMoved_(0), previousHalfMoveClock_(0)
 {
 }
 
@@ -181,7 +182,7 @@ bool Move::isCastleQueenside(const Board &board) const
 }
 
 void Move::validateMove(Board &board, Square *toSquare, Piece *pieceToMove,
-						CustomMoveType type) const
+						CustomMoveType type, PieceType promotionType) const
 {
 	if (pieceToMove == nullptr)
 		throw EmptySquareException("No piece at the source position.");
@@ -199,16 +200,23 @@ void Move::validateMove(Board &board, Square *toSquare, Piece *pieceToMove,
 		throw InvalidMoveException("Invalid kingside castling move for the selected piece.");
 	else if (type == CustomMoveType::CASTLE_QUEENSIDE && !pieceToMove->isValidMove(from_, to_, board, CustomMoveType::CASTLE_QUEENSIDE))
 		throw InvalidMoveException("Invalid queenside castling move for the selected piece.");
+	else if (type == CustomMoveType::PROMOTION && !pieceToMove->isValidMove(from_, to_, board, CustomMoveType::PROMOTION))
+		throw InvalidMoveException("Invalid promotion move for the selected piece.");
+
+	if (type == CustomMoveType::PROMOTION &&
+		ChessUtils::createPromotedPiece(promotionType, pieceToMove->getColor()) == nullptr)
+		throw InvalidMoveException("Invalid promotion piece.");
 }
 
-void Move::applyMove(Board &board, Square *fromSquare, Square *toSquare,
-					 Piece *pieceToMove, CustomMoveType type)
+void Move::prepareMove(Board &board, Square *toSquare, Piece *pieceToMove,
+					   CustomMoveType type)
 {
 	Square *captureSquare = type == CustomMoveType::EN_PASSANT
 								? &board[from_.getX()][to_.getY()]
 								: toSquare;
 	const Piece *capturedPiece = captureSquare->getPiece();
 	capturedPosition_ = type == CustomMoveType::EN_PASSANT ? Position(from_.getX(), to_.getY()) : to_;
+	movingPieceHasMoved_ = pieceToMove->getHasMoved();
 
 	if (capturedPiece != nullptr && capturedPiece->getType() != PieceType::KING)
 	{
@@ -229,7 +237,14 @@ void Move::applyMove(Board &board, Square *fromSquare, Square *toSquare,
 	{
 		throw InvalidMoveException("Unknown piece type.");
 	}
+}
 
+void Move::executeMove(Board &board, Square *fromSquare, Square *toSquare,
+					   CustomMoveType type, PieceType promotionType)
+{
+	Square *captureSquare = type == CustomMoveType::EN_PASSANT
+								? &board[from_.getX()][to_.getY()]
+								: toSquare;
 	std::unique_ptr<Piece> movingPiece = fromSquare->releasePiece();
 	std::unique_ptr<Piece> capturedPieceOwner = captureSquare->releasePiece();
 	toSquare->setPiece(std::move(movingPiece));
@@ -246,6 +261,15 @@ void Move::applyMove(Board &board, Square *fromSquare, Square *toSquare,
 		rookFromSquare = &board[from_.getX()][0];
 		rookToSquare = &board[from_.getX()][3];
 	}
+	if (type == CustomMoveType::PROMOTION)
+	{
+		Color color = toSquare->getPiece()->getColor();
+		std::unique_ptr<Piece> promotedPiece = ChessUtils::createPromotedPiece(promotionType, color);
+		if (promotedPiece == nullptr)
+			throw InvalidMoveException("Invalid promotion piece.");
+		toSquare->setPiece(std::move(promotedPiece));
+	}
+
 	if (rookFromSquare != nullptr)
 	{
 		std::unique_ptr<Piece> rook = rookFromSquare->releasePiece();
@@ -253,7 +277,7 @@ void Move::applyMove(Board &board, Square *fromSquare, Square *toSquare,
 		rookToSquare->getPiece()->addHasMoved();
 	}
 
-	if (ChessUtils::isInCheck(board, pieceToMove->getColor()))
+	if (ChessUtils::isInCheck(board, toSquare->getPiece()->getColor()))
 	{
 		if (rookFromSquare != nullptr)
 		{
@@ -265,24 +289,28 @@ void Move::applyMove(Board &board, Square *fromSquare, Square *toSquare,
 		captureSquare->setPiece(std::move(capturedPieceOwner));
 		throw InvalidMoveException("Move puts your king in check.");
 	}
-	pieceToMove->addHasMoved();
+	toSquare->getPiece()->addHasMoved();
 }
-void Move::makeMove(Board &board, const Move *lastMove)
+
+void Move::makeMove(Board &board, const Move *lastMove, PieceType promotionType)
 {
 	Square *fromSquare = &board[from_.getX()][from_.getY()];
 	Square *toSquare = &board[to_.getX()][to_.getY()];
 	Piece *pieceToMove = fromSquare->getPiece();
 	CustomMoveType type = CustomMoveType::NONE;
 
-	if (pieceToMove->getType() == PieceType::KING && isCastleKingside(board))
+	if (pieceToMove && pieceToMove->getType() == PieceType::KING && isCastleKingside(board))
 		type = CustomMoveType::CASTLE_KINGSIDE;
-	else if (pieceToMove->getType() == PieceType::KING && isCastleQueenside(board))
+	else if (pieceToMove && pieceToMove->getType() == PieceType::KING && isCastleQueenside(board))
 		type = CustomMoveType::CASTLE_QUEENSIDE;
-	else if (pieceToMove->getType() == PieceType::PAWN && isEnPassant(board, lastMove))
+	else if (pieceToMove && pieceToMove->getType() == PieceType::PAWN && isEnPassant(board, lastMove))
 		type = CustomMoveType::EN_PASSANT;
+	else if (pieceToMove && pieceToMove->getType() == PieceType::PAWN && (to_.getX() == 0 || to_.getX() == 7))
+		type = CustomMoveType::PROMOTION;
 
-	validateMove(board, toSquare, pieceToMove, type);
-	applyMove(board, fromSquare, toSquare, pieceToMove, type);
+	validateMove(board, toSquare, pieceToMove, type, promotionType);
+	prepareMove(board, toSquare, pieceToMove, type);
+	executeMove(board, fromSquare, toSquare, type, promotionType);
 }
 
 void Move::undoMove(Board &board) const
@@ -293,11 +321,23 @@ void Move::undoMove(Board &board) const
 	if (movingPiece == nullptr)
 		throw std::runtime_error("Cannot undo a move without a piece on its destination.");
 
+	const bool wasPromotion =
+		pieceType_ == PieceType::PAWN && movingPiece->getType() != PieceType::PAWN;
 	const bool wasCastling =
 		movingPiece->getType() == PieceType::KING &&
 		from_.getY() == 4 &&
 		(to_.getY() == 2 || to_.getY() == 6);
-	movingPiece->subtractHasMoved();
+	if (wasPromotion)
+	{
+		std::unique_ptr<Piece> pawn =
+			ChessUtils::createPiece(PieceType::PAWN, movingPiece->getColor());
+		pawn->setHasMoved(movingPieceHasMoved_);
+		movingPiece = std::move(pawn);
+	}
+	else
+	{
+		movingPiece->subtractHasMoved();
+	}
 	fromSquare->setPiece(std::move(movingPiece));
 
 	if (wasCastling)
@@ -317,33 +357,8 @@ void Move::undoMove(Board &board) const
 		const Color movingColor = fromSquare->getPiece()->getColor();
 		const Color capturedColor =
 			movingColor == Color::White ? Color::Black : Color::White;
-		std::unique_ptr<Piece> capturedPiece;
-		switch (capturedPieceType_)
-		{
-		case PieceType::PAWN:
-			capturedPiece = std::make_unique<Pawn>(capturedColor);
-			break;
-		case PieceType::ROOK:
-			capturedPiece = std::make_unique<Rook>(capturedColor);
-			break;
-		case PieceType::KNIGHT:
-			capturedPiece = std::make_unique<Knight>(capturedColor);
-			break;
-		case PieceType::BISHOP:
-			capturedPiece = std::make_unique<Bishop>(capturedColor);
-			break;
-		case PieceType::QUEEN:
-			capturedPiece = std::make_unique<Queen>(capturedColor);
-			break;
-		case PieceType::KING:
-			capturedPiece = std::make_unique<King>(capturedColor);
-			break;
-		default:
-			throw std::runtime_error("Cannot restore an unknown captured piece.");
-		}
-
-		for (size_t count = 0; count < capturedPieceHasMoved_; ++count)
-			capturedPiece->addHasMoved();
+		std::unique_ptr<Piece> capturedPiece = ChessUtils::createPiece(capturedPieceType_, capturedColor);
+		capturedPiece->setHasMoved(capturedPieceHasMoved_);
 		board[capturedPosition_.getX()][capturedPosition_.getY()]
 			.setPiece(std::move(capturedPiece));
 	}

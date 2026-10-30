@@ -7,15 +7,15 @@
 #include <stdexcept>
 #include <sstream>
 
-
 class Terminal
 {
 private:
 	Game &game_;
+
 public:
-	Terminal(Game& game);
+	Terminal(Game &game);
 
-
+	PieceType askPromotionPiece() const;
 	void printWelcomeMessage() const;
 	void printCurrentTurn() const;
 	void printCheckmateMessage(Color winner) const;
@@ -25,5 +25,4 @@ public:
 	void printGameResult(ChessGameResult result) const;
 	void start();
 	void clearScreen();
-
 };

@@ -3,6 +3,7 @@
 #include "chess/Position.hpp"
 #include "chess/utils/Color.hpp"
 #include "chess/Board.hpp"
+#include "chess/utils/EnumPiece.hpp"
 #include "chess/MoveHistory.hpp"
 #include "chess/Move.hpp"
 #include <string>
@@ -10,7 +11,6 @@
 
 class Move;
 class MoveHistory;
-
 
 class ChessUtils
 {
@@ -30,7 +30,8 @@ public:
 	static void FENToBoard(const std::string &fen, Board &board, Color &currentTurn, MoveHistory &moveHistory);
 	static bool isInCheck(const Board &board, Color color);
 
-
+	static std::unique_ptr<Piece> createPiece(PieceType type, Color color);
+	static std::unique_ptr<Piece> createPromotedPiece(PieceType type, Color color);
 	static std::string getCastlingRights(const Board &board);
 	static bool isCheckmate(Board &board, Color color, const Move *lastMove = nullptr);
 	static bool isStalemate(Board &board, Color color, const Move *lastMove = nullptr);

@@ -34,7 +34,8 @@ public:
 	void FENToBoard(const std::string &fen);
 	int getHalfMoveClock() const;
 	void startGame(Color selectedColor);
-	void makeMove(const Position &from, const Position &to);
+	bool isPromotionMove(const Position &from, const Position &to) const;
+	void makeMove(const Position &from, const Position &to, PieceType promotionType = PieceType::NONE);
 	void undoMove();
 	Color getCurrentTurn() const;
 	const Move *getLastMove() const;

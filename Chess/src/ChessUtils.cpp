@@ -214,27 +214,41 @@ std::string ChessUtils::getCastlingRights(const Board &board)
 	return rights.empty() ? "- -" : rights;
 }
 
-namespace
+std::unique_ptr<Piece> ChessUtils::createPiece(PieceType type, Color color)
 {
-	std::unique_ptr<Piece> createPiece(PieceType type, Color color)
+	switch (type)
 	{
-		switch (type)
-		{
-		case PieceType::PAWN:
-			return std::make_unique<Pawn>(color);
-		case PieceType::ROOK:
-			return std::make_unique<Rook>(color);
-		case PieceType::KNIGHT:
-			return std::make_unique<Knight>(color);
-		case PieceType::BISHOP:
-			return std::make_unique<Bishop>(color);
-		case PieceType::QUEEN:
-			return std::make_unique<Queen>(color);
-		case PieceType::KING:
-			return std::make_unique<King>(color);
-		default:
-			return nullptr;
-		}
+	case PieceType::PAWN:
+		return std::make_unique<Pawn>(color);
+	case PieceType::ROOK:
+		return std::make_unique<Rook>(color);
+	case PieceType::KNIGHT:
+		return std::make_unique<Knight>(color);
+	case PieceType::BISHOP:
+		return std::make_unique<Bishop>(color);
+	case PieceType::QUEEN:
+		return std::make_unique<Queen>(color);
+	case PieceType::KING:
+		return std::make_unique<King>(color);
+	default:
+		return nullptr;
+	}
+}
+
+std::unique_ptr<Piece> ChessUtils::createPromotedPiece(PieceType type, Color color)
+{
+	switch (type)
+	{
+	case PieceType::QUEEN:
+		return std::make_unique<Queen>(color);
+	case PieceType::ROOK:
+		return std::make_unique<Rook>(color);
+	case PieceType::BISHOP:
+		return std::make_unique<Bishop>(color);
+	case PieceType::KNIGHT:
+		return std::make_unique<Knight>(color);
+	default:
+		return nullptr;
 	}
 }
 
@@ -255,9 +269,14 @@ bool ChessUtils::hasLegalMoves(Board &board, Color color, const Move *lastMove)
 			for (const Position &newPos : validMoves)
 			{
 				Move candidate(currentPos, newPos);
+				const PieceType promotionType =
+					piece->getType() == PieceType::PAWN &&
+							(newPos.getX() == 0 || newPos.getX() == 7)
+						? PieceType::QUEEN
+						: PieceType::NONE;
 				try
 				{
-					candidate.makeMove(board, lastMove);
+					candidate.makeMove(board, lastMove, promotionType);
 				}
 				catch (const InvalidMoveException &)
 				{
@@ -265,25 +284,7 @@ bool ChessUtils::hasLegalMoves(Board &board, Color color, const Move *lastMove)
 				}
 
 				const bool legal = !isInCheck(board, color);
-				const Color capturedColor =
-					piece->getColor() == Color::White ? Color::Black : Color::White;
-				std::unique_ptr<Piece> movingPiece =
-					board[newPos.getX()][newPos.getY()].releasePiece();
-				movingPiece->subtractHasMoved();
-				board[currentPos.getX()][currentPos.getY()].setPiece(std::move(movingPiece));
-
-				if (candidate.getCapturedPieceType() != PieceType::NONE)
-				{
-					std::unique_ptr<Piece> capturedPiece =
-						createPiece(candidate.getCapturedPieceType(), capturedColor);
-					if (capturedPiece == nullptr)
-						throw std::runtime_error("Failed to restore captured piece.");
-					for (size_t count = 0; count < candidate.getCapturedPieceHasMoved(); ++count)
-						capturedPiece->addHasMoved();
-					const Position &capturedPosition = candidate.getCapturedPosition();
-					board[capturedPosition.getX()][capturedPosition.getY()]
-						.setPiece(std::move(capturedPiece));
-				}
+				candidate.undoMove(board);
 
 				if (legal)
 					return true;

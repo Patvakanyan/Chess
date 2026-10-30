@@ -19,31 +19,6 @@ void Game::FENToBoard(const std::string &fen)
 {
 	ChessUtils::FENToBoard(fen, board_, currentTurn_, moveHistory_);
 }
-/*
-void Game::prepareBoard()
-{
-	board_.placePiece(std::make_unique<King>(Color::White), Position(7, 4));
-	board_.placePiece(std::make_unique<King>(Color::Black), Position(0, 4));
-	board_.placePiece(std::make_unique<Rook>(Color::White), Position(7, 0));
-	board_.placePiece(std::make_unique<Rook>(Color::White), Position(7, 7));
-	board_.placePiece(std::make_unique<Rook>(Color::Black), Position(0, 0));
-	board_.placePiece(std::make_unique<Rook>(Color::Black), Position(0, 7));
-	board_.placePiece(std::make_unique<Knight>(Color::White), Position(7, 1));
-	board_.placePiece(std::make_unique<Knight>(Color::White), Position(7, 6));
-	board_.placePiece(std::make_unique<Knight>(Color::Black), Position(0, 1));
-	board_.placePiece(std::make_unique<Knight>(Color::Black), Position(0, 6));
-	board_.placePiece(std::make_unique<Bishop>(Color::White), Position(7, 2));
-	board_.placePiece(std::make_unique<Bishop>(Color::White), Position(7, 5));
-	board_.placePiece(std::make_unique<Bishop>(Color::Black), Position(0, 2));
-	board_.placePiece(std::make_unique<Bishop>(Color::Black), Position(0, 5));
-	board_.placePiece(std::make_unique<Queen>(Color::White), Position(7, 3));
-	board_.placePiece(std::make_unique<Queen>(Color::Black), Position(0, 3));
-	for (int i = 0; i < 8; ++i)
-	{
-		board_.placePiece(std::make_unique<Pawn>(Color::White), Position(6, i));
-		board_.placePiece(std::make_unique<Pawn>(Color::Black), Position(1, i));
-	}
-}*/
 
 void Game::undoMove()
 {
@@ -115,7 +90,21 @@ void Game::printBoard() const
 	std::cout << "  a b c d e f g h\n";
 }
 
-void Game::makeMove(const Position &from, const Position &to)
+bool Game::isPromotionMove(const Position &from, const Position &to) const
+{
+	const Square *fromSquare = &board_[from.getX()][from.getY()];
+	if (fromSquare->isEmpty())
+		return false;
+
+	const Piece *movingPiece = fromSquare->getPiece();
+	if (movingPiece->getType() != PieceType::PAWN)
+		return false;
+
+	int promotionRow = (movingPiece->getColor() == Color::White) ? 0 : 7;
+	return to.getX() == promotionRow;
+}
+
+void Game::makeMove(const Position &from, const Position &to, PieceType promotionType)
 {
 	if (gameOver_)
 		throw std::runtime_error("Game is over. No more moves can be made.");
@@ -133,7 +122,7 @@ void Game::makeMove(const Position &from, const Position &to)
 		const Move *lastMove = moveHistory_.getMoves().empty()
 								   ? nullptr
 								   : &moveHistory_.getMoves().back();
-		move.makeMove(board_, lastMove);
+		move.makeMove(board_, lastMove, promotionType);
 	}
 	catch (const InvalidMoveException &e)
 	{

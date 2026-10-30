@@ -16,18 +16,24 @@ private:
 	Position to_;
 	PieceType pieceType_;
 
+
 	PieceType capturedPieceType_;
 	size_t capturedPieceHasMoved_;
 	Position capturedPosition_;
 	CustomMoveType capturedPieceMoveType_;
+	size_t movingPieceHasMoved_;
+
 
 	int previousHalfMoveClock_;
 
 private:
 	void setPieceType(Piece *piece);
 	void validateMove(Board &board, Square *toSquare, Piece *pieceToMove,
-					  CustomMoveType type) const;
-	void applyMove(Board &board, Square *fromSquare, Square *toSquare, Piece *pieceToMove, CustomMoveType type);
+					  CustomMoveType type, PieceType promotionType) const;
+	void prepareMove(Board &board, Square *toSquare, Piece *pieceToMove,
+					 CustomMoveType type);
+	void executeMove(Board &board, Square *fromSquare, Square *toSquare,
+					 CustomMoveType type, PieceType promotionType);
 	bool isEnPassant(const Board &board, const Move *lastMove) const;
 	bool isCastleKingside(const Board &board) const;
 	bool isCastleQueenside(const Board &board) const;
@@ -36,7 +42,7 @@ public:
 	Move();
 	Move(const Position &from, const Position &to);
 
-	void makeMove(Board &board, const Move *lastMove = nullptr);
+	void makeMove(Board &board, const Move *lastMove = nullptr, PieceType promotionType = PieceType::NONE);
 
 	const Position &getFrom() const;
 	const Position &getTo() const;
