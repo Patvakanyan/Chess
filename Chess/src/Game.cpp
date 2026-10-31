@@ -28,6 +28,7 @@ void Game::undoMove()
 		currentTurn_ = (currentTurn_ == Color::White) ? Color::Black : Color::White;
 		throw InvalidMoveException("No moves to undo.");
 	}
+	moveHistory_.updateFEN(board_, currentTurn_);
 	gameOver_ = false;
 }
 
@@ -90,12 +91,12 @@ void Game::makeMove(const Position &from, const Position &to, PieceType promotio
 	}
 	currentTurn_ = (currentTurn_ == Color::White) ? Color::Black : Color::White;
 	moveHistory_.addMove(move);
-	moveHistory_.updateFEN(board_, currentTurn_, moveHistory_.getHalfMoveClock(), moveHistory_.getFullMoveNumber());
-	moveHistory_.printMoveHistory();
-	std::cout << "Current FEN: " << moveHistory_.getFEN() << std::endl;
+	moveHistory_.updateFEN(board_, currentTurn_);
 
 	if (currentTurn_ == Color::Black)
 		moveHistory_.addFullMoveNumber();
+	moveHistory_.printMoveHistory();
+	std::cout << "Current FEN: " << moveHistory_.getFEN() << std::endl;
 	const Move *lastMove = &moveHistory_.getMoves().back();
 	if (ChessUtils::isCheckmate(board_, currentTurn_, lastMove) ||
 		ChessUtils::isStalemate(board_, currentTurn_, lastMove) ||

@@ -24,9 +24,9 @@ private:
 
 	std::string FEN_;
 
+
 	void halfMoveClockAndReset();
 	std::unique_ptr<Piece> createCapturedPiece(PieceType type, Color color) const;
-
 
 public:
 	MoveHistory();
@@ -36,11 +36,10 @@ public:
 	MoveHistory &operator=(MoveHistory &&other) = delete;
 	~MoveHistory() = default;
 
-
 	void setFEN(const std::string &fen);
 	const std::string &getFEN() const;
 
-	void updateFEN(const Board &board, Color currentTurn, int halfMoveClock, int fullMoveNumber);//Add this method to update the FEN string based on the current board state and move history
+	void updateFEN(const Board &board, Color currentTurn);
 
 	void setFullMoveNumber(int fullMoveNumber);
 	int getFullMoveNumber() const;
@@ -52,6 +51,7 @@ public:
 	void clear();
 	void addMove(const Move &move);
 	bool undoMove(Board &board);
+
 	const std::vector<Move> &getMoves() const;
 	void printMoveHistory() const;
 };

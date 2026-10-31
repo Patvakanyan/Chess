@@ -1,6 +1,6 @@
 #include "chess/MoveHistory.hpp"
 
-MoveHistory::MoveHistory() : halfMoveClock_(0) {}
+MoveHistory::MoveHistory() : halfMoveClock_(0), fullMoveNumber_(1) {}
 
 int MoveHistory::getHalfMoveClock() const
 {
@@ -11,6 +11,8 @@ void MoveHistory::clear()
 {
 	moves_.clear();
 	halfMoveClock_ = 0;
+	fullMoveNumber_ = 1;
+	FEN_.clear();
 }
 
 const std::vector<Move> &MoveHistory::getMoves() const
@@ -82,6 +84,7 @@ bool MoveHistory::undoMove(Board &board)
 
 	std::unique_ptr<Piece> tmpPiece =
 		board[move.getFrom().getX()][move.getFrom().getY()].releasePiece();
+	const Color movingPieceColor = tmpPiece->getColor();
 	board[move.getTo().getX()][move.getTo().getY()].setPiece(std::move(tmpPiece));
 	halfMoveClock_ = move.getPreviousHalfMoveClock();
 	if (move.getCapturedPieceType() != PieceType::NONE)
@@ -98,6 +101,8 @@ bool MoveHistory::undoMove(Board &board)
 		board[capturedPosition.getX()][capturedPosition.getY()].setPiece(std::move(capturedPiece));
 	}
 	moves_.pop_back();
+	if (movingPieceColor == Color::Black && fullMoveNumber_ > 1)
+		--fullMoveNumber_;
 	Piece *pieceToMove = board[move.getTo().getX()][move.getTo().getY()].getPiece();
 	if (pieceToMove != nullptr)
 		pieceToMove->subtractHasMoved();
@@ -138,11 +143,8 @@ void MoveHistory::addFullMoveNumber()
 	fullMoveNumber_++;
 }
 
-void MoveHistory::updateFEN(const Board &board, Color currentTurn, int halfMoveClock, int fullMoveNumber)
+void MoveHistory::updateFEN(const Board &board, Color currentTurn)
 {
-	if (moves_.empty())
-		return;
-
 	FEN_.clear();
 
 	for (size_t i = 0; i < 8; ++i)
@@ -184,8 +186,26 @@ void MoveHistory::updateFEN(const Board &board, Color currentTurn, int halfMoveC
 	FEN_ += (currentTurn == Color::White) ? " w " : " b ";
 	FEN_ += ChessUtils::getCastlingRights(board);
 	FEN_ += ' ';
-
-	FEN_ += std::to_string(halfMoveClock);
+	if (moves_.empty())
+		FEN_ += "-";
+	else
+	{
+		const Move &lastMove = moves_.back();
+		if (lastMove.getPieceType() == PieceType::PAWN && std::abs(lastMove.getFrom().getX() - lastMove.getTo().getX()) == 2)
+		{
+			char file = 'a' + lastMove.getFrom().getY();
+			int targetRow = (lastMove.getFrom().getX() + lastMove.getTo().getX()) / 2;
+			int rank = 8 - targetRow;
+			FEN_ += file;
+			FEN_ += std::to_string(rank);
+		}
+		else
+		{
+			FEN_ += "-";
+		}
+	}
 	FEN_ += ' ';
-	FEN_ += std::to_string(fullMoveNumber);
+	FEN_ += std::to_string(getHalfMoveClock());
+	FEN_ += ' ';
+	FEN_ += std::to_string(getFullMoveNumber());
 }

@@ -211,7 +211,7 @@ std::string ChessUtils::getCastlingRights(const Board &board)
 		}
 	}
 
-	return rights.empty() ? "- -" : rights;
+	return rights.empty() ? "-" : rights;
 }
 
 std::unique_ptr<Piece> ChessUtils::createPiece(PieceType type, Color color)
