@@ -7,69 +7,76 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsSimpleTextItem>
 #include <QGuiApplication>
+#include <QPainter>
 #include <QPen>
 
 namespace
 {
-constexpr qreal kPieceHeightRatio = 0.68;
-constexpr qreal kPieceWidthRatio = 0.68;
-constexpr int kGlyphReferenceSize = 100; // only used to build the outline; it is rescaled later
+	constexpr qreal kPieceHeightRatio = 0.68;
+	constexpr qreal kPieceWidthRatio = 0.68;
+	constexpr int kGlyphReferenceSize = 100; // only used to build the outline; it is rescaled later
 
-const QColor kLightSquare(241, 224, 194);
-const QColor kDarkSquare(109, 78, 63);
-const QColor kSceneBackground(22, 29, 26);
-const QColor kLightSquareLabel(84, 59, 40);
-const QColor kDarkSquareLabel(239, 218, 181);
-const QColor kWhitePieceFill(0xf3, 0xe5, 0xc8);
-const QColor kWhitePieceOutline(0x35, 0x28, 0x1d);
-const QColor kBlackPieceFill(0x24, 0x24, 0x24);
-const QColor kBlackPieceOutline(0xc8, 0xb9, 0x9c);
-const QColor kHighlightColor(120, 200, 140, 140);
-const QColor kCastleHighlightColor(245, 205, 55, 190);
+	const QColor kLightSquare(241, 224, 194);
+	const QColor kDarkSquare(109, 78, 63);
+	const QColor kSceneBackground(22, 29, 26);
+	const QColor kLightSquareLabel(84, 59, 40);
+	const QColor kDarkSquareLabel(239, 218, 181);
+	const QColor kWhitePieceFill(0xf3, 0xe5, 0xc8);
+	const QColor kWhitePieceOutline(0x35, 0x28, 0x1d);
+	const QColor kBlackPieceFill(0x24, 0x24, 0x24);
+	const QColor kBlackPieceOutline(0xc8, 0xb9, 0x9c);
+	const QColor kHighlightColor(120, 200, 140, 140);
+	const QColor kCastleHighlightColor(245, 205, 55, 190);
 
-constexpr char kFiles[] = "abcdefgh";
+	constexpr char kFiles[] = "abcdefgh";
 
-// Unicode "black" chess glyphs (solid shapes) are used for both sides;
-// fill and outline colors distinguish the teams.
-constexpr char16_t glyphFor(PieceKind kind)
-{
-	switch (kind)
+	// Unicode "black" chess glyphs (solid shapes) are used for both sides;
+	// fill and outline colors distinguish the teams.
+	constexpr char16_t glyphFor(PieceKind kind)
 	{
-	case PieceKind::King:   return 0x265A;
-	case PieceKind::Queen:  return 0x265B;
-	case PieceKind::Rook:   return 0x265C;
-	case PieceKind::Bishop: return 0x265D;
-	case PieceKind::Knight: return 0x265E;
-	case PieceKind::Pawn:   return 0x265F;
+		switch (kind)
+		{
+		case PieceKind::King:
+			return 0x265A;
+		case PieceKind::Queen:
+			return 0x265B;
+		case PieceKind::Rook:
+			return 0x265C;
+		case PieceKind::Bishop:
+			return 0x265D;
+		case PieceKind::Knight:
+			return 0x265E;
+		case PieceKind::Pawn:
+			return 0x265F;
+		}
+		return 0;
 	}
-	return 0;
-}
 
-bool isLightSquare(int row, int column)
-{
-	return (row + column) % 2 == 0;
-}
+	bool isLightSquare(int row, int column)
+	{
+		return (row + column) % 2 == 0;
+	}
 
-QColor squareColor(int row, int column)
-{
-	return isLightSquare(row, column) ? kLightSquare : kDarkSquare;
-}
+	QColor squareColor(int row, int column)
+	{
+		return isLightSquare(row, column) ? kLightSquare : kDarkSquare;
+	}
 
-QColor coordinateColor(int row, int column)
-{
-	return isLightSquare(row, column) ? kLightSquareLabel : kDarkSquareLabel;
-}
+	QColor coordinateColor(int row, int column)
+	{
+		return isLightSquare(row, column) ? kLightSquareLabel : kDarkSquareLabel;
+	}
 
-QFont pieceFont()
-{
-	QFont font;
-	font.setFamilies({QStringLiteral("Noto Sans Symbols 2"),
-					  QStringLiteral("Segoe UI Symbol"),
-					  QStringLiteral("Apple Symbols"),
-					  QStringLiteral("DejaVu Sans")});
-	font.setPixelSize(kGlyphReferenceSize);
-	return font;
-}
+	QFont pieceFont()
+	{
+		QFont font;
+		font.setFamilies({QStringLiteral("Noto Sans Symbols 2"),
+						  QStringLiteral("Segoe UI Symbol"),
+						  QStringLiteral("Apple Symbols"),
+						  QStringLiteral("DejaVu Sans")});
+		font.setPixelSize(kGlyphReferenceSize);
+		return font;
+	}
 } // namespace
 
 ChessScene::ChessScene(QObject *parent)
@@ -80,7 +87,6 @@ ChessScene::ChessScene(QObject *parent)
 	drawBoardSquares();
 	drawCoordinates();
 }
-
 
 QPointF ChessScene::squareCenter(int row, int column)
 {
@@ -131,6 +137,7 @@ void ChessScene::drawCoordinates()
 const QPainterPath &ChessScene::glyphPath(PieceKind kind)
 {
 	const int key = static_cast<int>(kind);
+
 	auto it = m_glyphCache.find(key);
 	if (it == m_glyphCache.end())
 	{
@@ -207,6 +214,29 @@ void ChessScene::showPosition(const Board &board)
 	for (int row = 0; row < kBoardSize; ++row)
 		for (int column = 0; column < kBoardSize; ++column)
 			setPiece(row, column, board[row][column]);
+}
+
+QPixmap ChessScene::pieceIcon(PieceKind kind, bool white, int size)
+{
+	QPainterPath path;
+	path.addText(0, 0, pieceFont(), QString(QChar(glyphFor(kind))));
+	const QRectF b = path.boundingRect();
+
+	QPixmap pix(size, size);
+	pix.fill(Qt::transparent);
+
+	QPainter p(&pix);
+	p.setRenderHint(QPainter::Antialiasing);
+
+	const qreal s = qMin(size * 0.85 / b.width(), size * 0.85 / b.height());
+	p.translate(size / 2.0, size / 2.0); 
+	p.scale(s, s);
+	p.translate(-b.center());
+
+	p.setBrush(white ? kWhitePieceFill : kBlackPieceFill);
+	p.setPen(QPen(white ? kWhitePieceOutline : kBlackPieceOutline, 1.8));
+	p.drawPath(path);
+	return pix;
 }
 
 void ChessScene::highlightSquares(const QVector<QPoint> &squares,

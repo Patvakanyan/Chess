@@ -8,6 +8,7 @@
 #include <optional>
 #include <vector>
 
+#include "PromotionDialog.hpp"
 #include "chess/Game.hpp"
 #include "chess/Position.hpp"
 
@@ -42,7 +43,10 @@ private:
 	bool isGameFinished();
 	QString statusText() const;
 
+	static QPixmap pieceIcon(PieceKind kind, bool white, int size);
+
 	Game m_game;
 	ChessScene *m_scene;
 	std::optional<Position> m_selected;
+	~GameController();
 };

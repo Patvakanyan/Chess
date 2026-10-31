@@ -23,6 +23,7 @@ public:
 	void printInvalidMoveMessage() const;
 	void printGameOverMessage() const;
 	void printGameResult(ChessGameResult result) const;
+	void printBoard() const;
 	void start();
 	void clearScreen();
 };

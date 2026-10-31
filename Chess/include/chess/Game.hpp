@@ -39,5 +39,4 @@ public:
 	void undoMove();
 	Color getCurrentTurn() const;
 	const Move *getLastMove() const;
-	void printBoard() const;
 };

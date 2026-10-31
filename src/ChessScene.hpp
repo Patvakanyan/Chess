@@ -57,7 +57,7 @@ public:
 	void highlightSquares(const QVector<QPoint> &squares,
 						  const QVector<QPoint> &castleSquares = {});
 	void clearHighlights();
-
+	static QPixmap pieceIcon(PieceKind kind, bool white, int size);
 	// The single place that maps a board square to scene coordinates.
 	static QPointF squareCenter(int row, int column);
 

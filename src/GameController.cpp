@@ -7,6 +7,7 @@
 #include "chess/utils/ChessUtils.hpp"
 
 #include <algorithm>
+#include <QApplication>
 
 namespace
 {
@@ -131,16 +132,21 @@ void GameController::onSquareClicked(int row, int column)
 
 	if (m_selected)
 	{
+		PieceType promotionType = PieceType::NONE;
+
+		const std::vector<Position> legal = legalMovesFrom(*m_selected);
+		const bool isLegal = std::find(legal.begin(), legal.end(), clicked) != legal.end();
+
+		if (isLegal && m_game.isPromotionMove(*m_selected, clicked))
+		{
+			const bool white = (m_game.getCurrentTurn() == Color::White);
+			PromotionDialog dlg(white, QApplication::activeWindow());
+			if (dlg.exec() != QDialog::Accepted)
+				return; // player closed the dialog: cancel the move
+			promotionType = dlg.selectedPiece();
+		}
 		try
 		{
-			const Board &board = m_game.getBoard();
-			const Piece *piece =
-				board[m_selected->getX()][m_selected->getY()].getPiece();
-			const PieceType promotionType =
-				piece != nullptr && piece->getType() == PieceType::PAWN &&
-						(clicked.getX() == 0 || clicked.getX() == 7)
-					? PieceType::QUEEN
-					: PieceType::NONE;
 			m_game.makeMove(*m_selected, clicked, promotionType);
 			m_selected.reset();
 			m_scene->clearHighlights();
@@ -239,4 +245,9 @@ bool GameController::isGameFinished()
 	return ChessUtils::isCheckmate(board, turn) ||
 		   ChessUtils::isStalemate(board, turn) ||
 		   ChessUtils::isFiftyMoveRuleDraw(m_game.getHalfMoveClock());
+}
+
+
+GameController::~GameController() {
+
 }

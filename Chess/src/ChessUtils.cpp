@@ -309,6 +309,27 @@ bool ChessUtils::isFiftyMoveRuleDraw(int halfMoveClock)
 	return halfMoveClock >= 100;
 }
 
+PieceType ChessUtils::charToPieceType(char c)
+{
+	switch (std::tolower(c))
+	{
+	case 'p':
+		return PieceType::PAWN;
+	case 'r':
+		return PieceType::ROOK;
+	case 'n':
+		return PieceType::KNIGHT;
+	case 'b':
+		return PieceType::BISHOP;
+	case 'q':
+		return PieceType::QUEEN;
+	case 'k':
+		return PieceType::KING;
+	default:
+		throw std::invalid_argument("Invalid piece character: " + std::string(1, c));
+	}
+}
+
 void ChessUtils::FENToBoard(const std::string &fen, Board &board, Color &currentTurn, MoveHistory &moveHistory)
 {
 	std::cout << "Parsing FEN: " << fen << std::endl;
@@ -344,30 +365,7 @@ void ChessUtils::FENToBoard(const std::string &fen, Board &board, Color &current
 		else
 		{
 			Color color = std::isupper(c) ? Color::White : Color::Black;
-			PieceType type;
-			switch (std::tolower(c))
-			{
-			case 'p':
-				type = PieceType::PAWN;
-				break;
-			case 'r':
-				type = PieceType::ROOK;
-				break;
-			case 'n':
-				type = PieceType::KNIGHT;
-				break;
-			case 'b':
-				type = PieceType::BISHOP;
-				break;
-			case 'q':
-				type = PieceType::QUEEN;
-				break;
-			case 'k':
-				type = PieceType::KING;
-				break;
-			default:
-				throw std::invalid_argument("Invalid piece character in FEN: " + std::string(1, c));
-			}
+			PieceType type = charToPieceType(c);
 			board[row][col].setPiece(createPiece(type, color));
 			++col;
 		}

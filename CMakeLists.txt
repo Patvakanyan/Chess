@@ -20,6 +20,8 @@ qt_add_executable(appchessGui_2
     main.cpp
     src/ChessScene.cpp
     src/ChessView.cpp
+    src/PromotionDialog.hpp
+    src/PromotionDialog.cpp
     src/ChessView.hpp
     src/GameController.cpp
     src/GameController.hpp

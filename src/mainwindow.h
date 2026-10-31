@@ -18,6 +18,8 @@ public:
 private:
 	QFrame *createControlPanel(QWidget *parent);
 
+	
+
 	ChessScene *m_scene = nullptr;
 	ChessView *m_boardView = nullptr;
 	GameController *m_controller = nullptr;

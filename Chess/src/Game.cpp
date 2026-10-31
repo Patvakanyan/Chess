@@ -46,50 +46,6 @@ int Game::getHalfMoveClock() const
 	return moveHistory_.getHalfMoveClock();
 }
 
-void Game::printBoard() const
-{
-	std::cout << "  a b c d e f g h\n";
-
-	for (int i = 0; i < 8; ++i)
-	{
-		std::cout << 8 - i << " ";
-		for (int j = 0; j < 8; ++j)
-		{
-			const Square &square = board_[i][j];
-			if (square.isEmpty())
-			{
-				std::cout << ". ";
-			}
-			else
-			{
-				const Piece *piece = square.getPiece();
-				char pieceChar = '?';
-				if (dynamic_cast<const King *>(piece))
-					pieceChar = 'K';
-				else if (dynamic_cast<const Queen *>(piece))
-					pieceChar = 'Q';
-				else if (dynamic_cast<const Rook *>(piece))
-					pieceChar = 'R';
-				else if (dynamic_cast<const Bishop *>(piece))
-					pieceChar = 'B';
-				else if (dynamic_cast<const Knight *>(piece))
-					pieceChar = 'N';
-				else if (dynamic_cast<const Pawn *>(piece))
-					pieceChar = 'P';
-
-				if (piece->getColor() == Color::Black)
-				{
-					pieceChar = std::tolower(pieceChar);
-				}
-
-				std::cout << pieceChar << " ";
-			}
-		}
-		std::cout << 8 - i << "\n";
-	}
-	std::cout << "  a b c d e f g h\n";
-}
-
 bool Game::isPromotionMove(const Position &from, const Position &to) const
 {
 	const Square *fromSquare = &board_[from.getX()][from.getY()];

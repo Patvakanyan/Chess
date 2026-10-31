@@ -16,6 +16,7 @@ class ChessUtils
 {
 public:
 	ChessUtils() = delete;
+	~ChessUtils() = delete;
 
 	static bool isSquareAttacked(const Board &board, const Position &pos, Color color);
 	static bool isQueenRookAttacked(const Board &board, const Position &pos, Color color);
@@ -27,6 +28,7 @@ public:
 	static bool hasLegalMoves(Board &board, Color color, const Move *lastMove = nullptr);
 	static Position findKing(const Board &board, Color color);
 
+	static PieceType charToPieceType(char c);
 	static void FENToBoard(const std::string &fen, Board &board, Color &currentTurn, MoveHistory &moveHistory);
 	static bool isInCheck(const Board &board, Color color);
 
