@@ -26,14 +26,16 @@ public:
 	static bool isKingAttacked(const Board &board, const Position &pos, Color color);
 
 	static bool hasLegalMoves(Board &board, Color color, const Move *lastMove = nullptr);
-	static Position findKing(const Board &board, Color color);
+	static Position findPiece(const Board &board, Color color, PieceType type);
 
 	static PieceType charToPieceType(char c);
 	static void FENToBoard(const std::string &fen, Board &board, Color &currentTurn, MoveHistory &moveHistory);
 	static bool isInCheck(const Board &board, Color color);
 
-	static std::unique_ptr<Piece> createPiece(PieceType type, Color color);
+	static std::unique_ptr<Piece> createPiece(PieceType type, Color color, size_t hasMoved = 0);
 	static std::unique_ptr<Piece> createPromotedPiece(PieceType type, Color color);
+
+	static void setCastlingRights(Board &board, size_t kingeSideCastle, size_t queenSideCastle, Color color);
 	static std::string getCastlingRights(const Board &board);
 	static bool isCheckmate(Board &board, Color color, const Move *lastMove = nullptr);
 	static bool isStalemate(Board &board, Color color, const Move *lastMove = nullptr);

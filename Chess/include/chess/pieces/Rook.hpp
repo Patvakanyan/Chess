@@ -7,7 +7,7 @@
 class Rook : public Piece
 {
 public:
-	Rook(Color color);
+	Rook(Color color, size_t hasMoved = 0);
 	Rook(const Rook &other) = delete;
 	Rook &operator=(const Rook &other) = delete;
 	~Rook() = default;

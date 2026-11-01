@@ -8,7 +8,7 @@
 class Pawn : public Piece
 {
 public:
-	Pawn(Color color);
+	Pawn(Color color, size_t hasMoved = 0);
 	Pawn(const Pawn &other) = delete;
 	Pawn &operator=(const Pawn &other) = delete;
 	~Pawn() = default;

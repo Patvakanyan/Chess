@@ -1,6 +1,8 @@
 #include "chess/pieces/Queen.hpp"
 
-Queen::Queen(Color color) : Piece(color) {}
+Queen::Queen(Color color, size_t hasMoved) : Piece(color) {
+	setHasMoved(hasMoved);
+}
 
 PieceType Queen::getType() const
 {

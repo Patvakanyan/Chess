@@ -9,7 +9,7 @@
 class Queen : public Piece
 {
 public:
-	Queen(Color color);
+	Queen(Color color, size_t hasMoved = 0);
 	Queen(const Queen &other) = delete;
 	Queen &operator=(const Queen &other) = delete;
 	~Queen() = default;

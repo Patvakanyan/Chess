@@ -1,22 +1,23 @@
 #include "chess/pieces/Bishop.hpp"
 
-
-Bishop::Bishop(Color color) : Piece(color) {}
+Bishop::Bishop(Color color, size_t hasMoved) : Piece(color)
+{
+	setHasMoved(hasMoved);
+}
 
 PieceType Bishop::getType() const
 {
 	return PieceType::BISHOP;
 }
 
-std::vector <Position> Bishop::getValidMoves(const Position currentPosition, const Board &board, CustomMoveType) const
+std::vector<Position> Bishop::getValidMoves(const Position currentPosition, const Board &board, CustomMoveType) const
 {
 	std::vector<Position> validMoves;
 	int currentX = currentPosition.getX();
 	int currentY = currentPosition.getY();
 
 	const std::vector<std::pair<int, int>> directions = {
-		{1, 1}, {1, -1}, {-1, 1}, {-1, -1}
-	};
+		{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
 
 	for (const auto &dir : directions)
 	{

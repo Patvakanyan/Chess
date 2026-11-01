@@ -8,7 +8,7 @@
 class King : public Piece
 {
 public:
-	King(Color color);
+	King(Color color, size_t hasMoved = 0);
 	King(const King &other) = delete;
 	King &operator=(const King &other) = delete;
 	~King() = default;

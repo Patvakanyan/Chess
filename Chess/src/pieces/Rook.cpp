@@ -1,6 +1,8 @@
 #include "chess/pieces/Rook.hpp"
 
-Rook::Rook(Color color) : Piece(color) {}
+Rook::Rook(Color color, size_t hasMoved) : Piece(color) {
+	setHasMoved(hasMoved);
+}
 
 PieceType Rook::getType() const
 {

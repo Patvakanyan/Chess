@@ -1,6 +1,8 @@
 #include "chess/pieces/King.hpp"
 #include <iostream>
-King::King(Color color) : Piece(color) {}
+King::King(Color color, size_t hasMoved) : Piece(color) {
+	setHasMoved(hasMoved);
+}
 
 PieceType King::getType() const
 {

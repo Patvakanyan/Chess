@@ -9,7 +9,7 @@
 class Bishop : public Piece
 {
 public:
-	Bishop(Color color);
+	Bishop(Color color, size_t hasMoved = 0);
 
 	PieceType getType() const override;
 	std::vector<Position> getValidMoves(const Position currentPosition, const Board &board, CustomMoveType moveType = CustomMoveType::NONE) const override;

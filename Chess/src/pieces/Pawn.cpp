@@ -1,6 +1,9 @@
 #include "chess/pieces/Pawn.hpp"
 
-Pawn::Pawn(Color color) : Piece(color) {}
+Pawn::Pawn(Color color, size_t hasMoved) : Piece(color)
+{
+	setHasMoved(hasMoved);
+}
 
 PieceType Pawn::getType() const
 {

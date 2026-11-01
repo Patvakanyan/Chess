@@ -1,6 +1,8 @@
 #include "chess/pieces/Knight.hpp"
 
-Knight::Knight(Color color) : Piece(color) {}
+Knight::Knight(Color color, size_t hasMoved) : Piece(color) {
+	setHasMoved(hasMoved);
+}
 
 PieceType Knight::getType() const
 {

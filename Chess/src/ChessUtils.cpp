@@ -1,14 +1,14 @@
 #include "chess/utils/ChessUtils.hpp"
 #include <memory>
 
-Position ChessUtils::findKing(const Board &board, Color color)
+Position ChessUtils::findPiece(const Board &board, Color color, PieceType type)
 {
 	for (size_t i = 0; i < 8; ++i)
 	{
 		for (size_t j = 0; j < 8; j++)
 		{
 			Piece *tmp = board[i][j].getPiece();
-			if (dynamic_cast<King *>(tmp) && tmp->getColor() == color)
+			if (tmp && tmp->getColor() == color && tmp->getType() == type)
 				return Position(i, j);
 		}
 	}
@@ -164,7 +164,7 @@ bool ChessUtils::isSquareAttacked(const Board &board, const Position &pos, Color
 }
 bool ChessUtils::isInCheck(const Board &board, Color color)
 {
-	Position kingPos = findKing(board, color);
+	Position kingPos = findPiece(board, color, PieceType::KING);
 	if (kingPos.getX() == -1)
 	{
 		throw std::runtime_error("King not found on the board.");
@@ -214,22 +214,22 @@ std::string ChessUtils::getCastlingRights(const Board &board)
 	return rights.empty() ? "-" : rights;
 }
 
-std::unique_ptr<Piece> ChessUtils::createPiece(PieceType type, Color color)
+std::unique_ptr<Piece> ChessUtils::createPiece(PieceType type, Color color, size_t hasMoved)
 {
 	switch (type)
 	{
 	case PieceType::PAWN:
-		return std::make_unique<Pawn>(color);
+		return std::make_unique<Pawn>(color, hasMoved);
 	case PieceType::ROOK:
-		return std::make_unique<Rook>(color);
+		return std::make_unique<Rook>(color, hasMoved);
 	case PieceType::KNIGHT:
-		return std::make_unique<Knight>(color);
+		return std::make_unique<Knight>(color, hasMoved);
 	case PieceType::BISHOP:
-		return std::make_unique<Bishop>(color);
+		return std::make_unique<Bishop>(color, hasMoved);
 	case PieceType::QUEEN:
-		return std::make_unique<Queen>(color);
+		return std::make_unique<Queen>(color, hasMoved);
 	case PieceType::KING:
-		return std::make_unique<King>(color);
+		return std::make_unique<King>(color, hasMoved);
 	default:
 		return nullptr;
 	}
@@ -330,6 +330,32 @@ PieceType ChessUtils::charToPieceType(char c)
 	}
 }
 
+void ChessUtils::setCastlingRights(Board &board, size_t kingeSideCastle, size_t queenSideCastle, Color color)
+{
+	Position kingPos = findPiece(board, color, PieceType::KING);
+	Position kingsideRookPos = findPiece(board, color, PieceType::ROOK);
+	Position queensideRookPos = findPiece(board, color, PieceType::ROOK);
+
+	Piece *king = board[kingPos.getX()][kingPos.getY()].getPiece();
+	Piece *kingsideRook = board[kingsideRookPos.getX()][kingsideRookPos.getY()].getPiece();
+	Piece *queensideRook = board[queensideRookPos.getX()][queensideRookPos.getY()].getPiece();
+	if (king && king->getType() == PieceType::KING)
+	{
+		if (kingeSideCastle == 0 && kingsideRook)
+		{
+			kingsideRook->setHasMoved(1);
+		}
+		if (queenSideCastle == 0 && queensideRook)
+		{
+			queensideRook->setHasMoved(1);
+		}
+		if (kingeSideCastle == 0 || queenSideCastle == 0)
+		{
+			king->setHasMoved(1);
+		}
+	}
+}
+
 void ChessUtils::FENToBoard(const std::string &fen, Board &board, Color &currentTurn, MoveHistory &moveHistory)
 {
 	std::cout << "Parsing FEN: " << fen << std::endl;
@@ -348,6 +374,10 @@ void ChessUtils::FENToBoard(const std::string &fen, Board &board, Color &current
 			board[i][j].setPiece(nullptr);
 		}
 	}
+	size_t whiteKingeSideCastle = castlingPart.find('K') != std::string::npos ? 1 : 0;
+	size_t whiteQueenSideCastle = castlingPart.find('Q') != std::string::npos ? 1 : 0;
+	size_t blackKingSideCastle = castlingPart.find('k') != std::string::npos ? 1 : 0;
+	size_t blackQueenSideCastle = castlingPart.find('q') != std::string::npos ? 1 : 0;
 
 	size_t row = 0;
 	size_t col = 0;
@@ -371,6 +401,8 @@ void ChessUtils::FENToBoard(const std::string &fen, Board &board, Color &current
 		}
 	}
 
+	setCastlingRights(board, whiteKingeSideCastle, whiteQueenSideCastle, Color::White);
+	setCastlingRights(board, blackKingSideCastle, blackQueenSideCastle, Color::Black);
 	// Set the current turn based on the FEN string
 	currentTurn = (turnPart == "w") ? Color::White : Color::Black;
 
