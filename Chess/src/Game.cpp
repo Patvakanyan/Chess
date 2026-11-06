@@ -1,9 +1,9 @@
 #include "chess/Game.hpp"
 #include "chess/utils/ChessUtils.hpp"
 
-Game::Game(const std::string fen) : board_(), moveHistory_(), currentTurn_(Color::White), gameOver_(false)
+Game::Game(const std::string fen) : board_(), moveHistory_(), state_(), gameOver_(false)
 {
-	moveHistory_.setFEN(fen);
+	fen_ = fen;
 }
 
 Board &Game::getBoard()
@@ -17,34 +17,41 @@ const Board &Game::getBoard() const
 
 void Game::FENToBoard(const std::string &fen)
 {
-	ChessUtils::FENToBoard(fen, board_, currentTurn_, moveHistory_);
+	ChessFenUtils::FENToBoard(fen, board_, state_);
+	fen_ = ChessFenUtils::boardToFEN(board_, state_);
 }
 
 void Game::undoMove()
 {
-	currentTurn_ = (currentTurn_ == Color::White) ? Color::Black : Color::White;
+	if (moveHistory_.getMoves().empty())
+		throw InvalidMoveException("No moves to undo.");
+	const Move &lastMove = moveHistory_.getMoves().back();
+	state_.halfMoveClock = lastMove.getPreviousHalfMoveClock();
+	state_.turn = (state_.turn == Color::White) ? Color::Black : Color::White;
+	if (state_.turn == Color::Black && state_.fullMoveNumber > 1)
+		--state_.fullMoveNumber;
 	if (!moveHistory_.undoMove(board_))
 	{
-		currentTurn_ = (currentTurn_ == Color::White) ? Color::Black : Color::White;
 		throw InvalidMoveException("No moves to undo.");
 	}
-	moveHistory_.updateFEN(board_, currentTurn_);
+	fen_ = ChessFenUtils::boardToFEN(board_, state_);
 	gameOver_ = false;
 }
 
 void Game::startGame(Color selectedColor)
 {
-	currentTurn_ = selectedColor;
+	state_.turn = selectedColor;
 	gameOver_ = false;
 	moveHistory_.clear();
 	board_.initializeBoard();
-	ChessUtils::FENToBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", board_, currentTurn_, moveHistory_);
-	currentTurn_ = selectedColor;
+	stockfishEngine_.startEngine();
+	ChessFenUtils::FENToBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", board_, state_);
+	state_.turn = selectedColor;
 }
 
 int Game::getHalfMoveClock() const
 {
-	return moveHistory_.getHalfMoveClock();
+	return state_.halfMoveClock;
 }
 
 bool Game::isPromotionMove(const Position &from, const Position &to) const
@@ -71,7 +78,7 @@ void Game::makeMove(const Position &from, const Position &to, PieceType promotio
 	Piece *pieceToMove = board_[from.getX()][from.getY()].getPiece();
 	if (pieceToMove == nullptr)
 		throw EmptySquareException("No piece at the source position.");
-	else if (pieceToMove->getColor() != currentTurn_)
+	else if (pieceToMove->getColor() != state_.turn)
 		throw InvalidMoveException("It's not your turn to move.");
 	Move move(from, to);
 	try
@@ -89,27 +96,70 @@ void Game::makeMove(const Position &from, const Position &to, PieceType promotio
 	{
 		throw InvalidPositionException("Invalid position: " + std::string(e.what()));
 	}
-	currentTurn_ = (currentTurn_ == Color::White) ? Color::Black : Color::White;
+	state_.turn = (state_.turn == Color::White) ? Color::Black : Color::White;
 	moveHistory_.addMove(move);
+	state_.enPassantTarget.reset();
+	if (move.getPieceType() == PieceType::PAWN &&
+		std::abs(move.getFrom().getX() - move.getTo().getX()) == 2)
+	{
+		state_.enPassantTarget = Position((move.getFrom().getX() + move.getTo().getX()) / 2,
+										 move.getFrom().getY());
+	}
 
-	if (currentTurn_ == Color::Black)
-		moveHistory_.addFullMoveNumber();
-	moveHistory_.updateFEN(board_, currentTurn_);
-	moveHistory_.printMoveHistory();
-	std::cout << "Current FEN: " << moveHistory_.getFEN() << std::endl;
+	if (state_.turn == Color::Black)
+		state_.fullMoveNumber++;
+	state_.halfMoveClock = (move.getPieceType() == PieceType::PAWN ||
+								move.getCapturedPieceType() != PieceType::NONE)
+							   ? 0
+							   : state_.halfMoveClock + 1;
+	fen_ = ChessFenUtils::boardToFEN(board_, state_);
 	const Move *lastMove = &moveHistory_.getMoves().back();
-	if (ChessUtils::isCheckmate(board_, currentTurn_, lastMove) ||
-		ChessUtils::isStalemate(board_, currentTurn_, lastMove) ||
-		ChessUtils::isFiftyMoveRuleDraw(moveHistory_.getHalfMoveClock()))
+	printFEN(std::cout);
+	printMoves(std::cout);
+	if (ChessGameRules::isCheckmate(board_, state_.turn, lastMove) ||
+		ChessGameRules::isStalemate(board_, state_.turn, lastMove) ||
+		ChessGameRules::isFiftyMoveRuleDraw(state_.halfMoveClock))
 		gameOver_ = true;
 }
 
 Color Game::getCurrentTurn() const
 {
-	return currentTurn_;
+	return state_.turn;
 }
 
 const Move *Game::getLastMove() const
 {
 	return moveHistory_.getMoves().empty() ? nullptr : &moveHistory_.getMoves().back();
+}
+
+StockfishEngine &Game::getStockfishEngine()
+{
+	return stockfishEngine_;
+}
+
+const std::string &Game::getFEN() const
+{
+	return fen_;
+}
+
+void Game::printFEN(std::ostream &out) const
+{
+	out << fen_ << '\n';
+}
+
+void Game::printMoves(std::ostream &out) const
+{
+	const std::vector<Move> &moves = moveHistory_.getMoves();
+	if (moves.empty())
+	{
+		out << "No moves have been made yet.\n";
+		return;
+	}
+
+	out << "Move History:\n";
+	for (size_t i = 0; i < moves.size(); ++i)
+	{
+		out << i + 1 << ". " << moves[i].getFrom().toString()
+			<< " -> " << moves[i].getTo().toString() << '\n';
+	}
 }

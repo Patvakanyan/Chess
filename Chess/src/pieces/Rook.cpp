@@ -1,15 +1,13 @@
 #include "chess/pieces/Rook.hpp"
 
-Rook::Rook(Color color, size_t hasMoved) : Piece(color) {
-	setHasMoved(hasMoved);
-}
+Rook::Rook(Color color) : Piece(color) {}
 
 PieceType Rook::getType() const
 {
 	return PieceType::ROOK;
 }
 
-std::vector<Position> Rook::getValidMoves(const Position currentPosition, const Board &board, CustomMoveType) const
+std::vector<Position> Rook::computeValidMoves(const Position currentPosition, const Board &board, CustomMoveType) const
 {
 	std::vector<Position> validMoves;
 

@@ -1,6 +1,6 @@
 #include "chess/Piece.hpp"
 
-Piece::Piece(Color color) : color(color), hasMoved_(false) {}
+Piece::Piece(Color color) : color(color) {}
 
 Color Piece::getColor() const
 {
@@ -21,38 +21,18 @@ bool Piece::isValidMove(const Position currentPosition, const Position newPositi
 	return false;
 }
 
-Piece::Piece(Piece &&other) noexcept : color(other.color), hasMoved_(other.hasMoved_)
+std::vector<Position> Piece::getValidMoves(const Position currentPosition, const Board &board, CustomMoveType moveType) const
 {
-	other.hasMoved_ = 0;
+	return computeValidMoves(currentPosition, board, moveType);
 }
-void Piece::setHasMoved(size_t hasMoved)
-{
-	hasMoved_ = hasMoved;
-}
+
+Piece::Piece(Piece &&other) noexcept : color(other.color) {}
 
 Piece &Piece::operator=(Piece &&other) noexcept
 {
 	if (this != &other)
 	{
 		color = other.color;
-		hasMoved_ = other.hasMoved_;
-		other.hasMoved_ = 0;
 	}
 	return *this;
-}
-
-void Piece::addHasMoved()
-{
-	hasMoved_++;
-}
-
-void Piece::subtractHasMoved()
-{
-	if (hasMoved_ > 0)
-		hasMoved_--;
-}
-
-size_t Piece::getHasMoved() const
-{
-	return hasMoved_;
 }

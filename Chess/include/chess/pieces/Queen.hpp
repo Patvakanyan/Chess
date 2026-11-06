@@ -9,11 +9,13 @@
 class Queen : public Piece
 {
 public:
-	Queen(Color color, size_t hasMoved = 0);
+	explicit Queen(Color color);
 	Queen(const Queen &other) = delete;
 	Queen &operator=(const Queen &other) = delete;
 	~Queen() = default;
 
 	PieceType getType() const override;
-	std::vector<Position> getValidMoves(const Position currentPosition, const Board &board, CustomMoveType moveType = CustomMoveType::NONE) const override;
+
+protected:
+	std::vector<Position> computeValidMoves(const Position currentPosition, const Board &board, CustomMoveType moveType) const override;
 };

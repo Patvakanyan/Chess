@@ -1,15 +1,13 @@
 #include "chess/pieces/Queen.hpp"
 
-Queen::Queen(Color color, size_t hasMoved) : Piece(color) {
-	setHasMoved(hasMoved);
-}
+Queen::Queen(Color color) : Piece(color) {}
 
 PieceType Queen::getType() const
 {
 	return PieceType::QUEEN;
 }
 
-std::vector<Position> Queen::getValidMoves(Position currentPosition, const Board &board, CustomMoveType) const
+std::vector<Position> Queen::computeValidMoves(Position currentPosition, const Board &board, CustomMoveType) const
 {
 	std::vector<Position> validMoves;
 

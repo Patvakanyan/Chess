@@ -5,13 +5,13 @@
 #include "chess/Board.hpp"
 #include "chess/Piece.hpp"
 #include "chess/utils/ChessUtils.hpp"
+#include "chess/GameState.hpp"
 
 #include "chess/exceptions/InvalidMoveException.hpp"
 #include "chess/utils/EnumPiece.hpp"
 #include <vector>
 #include <memory>
 
-#include <iostream>
 
 class Move;
 
@@ -19,13 +19,7 @@ class MoveHistory
 {
 private:
 	std::vector<Move> moves_;
-	int halfMoveClock_;
-	int fullMoveNumber_;
 
-	std::string FEN_;
-
-
-	void halfMoveClockAndReset();
 	std::unique_ptr<Piece> createCapturedPiece(PieceType type, Color color) const;
 
 public:
@@ -35,18 +29,6 @@ public:
 	MoveHistory(MoveHistory &&other) = delete;
 	MoveHistory &operator=(MoveHistory &&other) = delete;
 	~MoveHistory() = default;
-
-	void setFEN(const std::string &fen);
-	const std::string &getFEN() const;
-
-	void updateFEN(const Board &board, Color currentTurn);
-
-	void setFullMoveNumber(int fullMoveNumber);
-	int getFullMoveNumber() const;
-	void setHalfMoveClock(int halfMoveClock);
-	int getHalfMoveClock() const;
-
-	void addFullMoveNumber();
 
 	void clear();
 	void addMove(const Move &move);

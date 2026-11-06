@@ -125,18 +125,29 @@ void Terminal::printBoard() const
 			{
 				const Piece *piece = square.getPiece();
 				char pieceChar = '?';
-				if (dynamic_cast<const King *>(piece))
+				switch (piece->getType())
+				{
+				case PieceType::KING:
 					pieceChar = 'K';
-				else if (dynamic_cast<const Queen *>(piece))
+					break;
+				case PieceType::QUEEN:
 					pieceChar = 'Q';
-				else if (dynamic_cast<const Rook *>(piece))
+					break;
+				case PieceType::ROOK:
 					pieceChar = 'R';
-				else if (dynamic_cast<const Bishop *>(piece))
+					break;
+				case PieceType::BISHOP:
 					pieceChar = 'B';
-				else if (dynamic_cast<const Knight *>(piece))
+					break;
+				case PieceType::KNIGHT:
 					pieceChar = 'N';
-				else if (dynamic_cast<const Pawn *>(piece))
+					break;
+				case PieceType::PAWN:
 					pieceChar = 'P';
+					break;
+				default:
+					break;
+				}
 
 				if (piece->getColor() == Color::Black)
 					pieceChar = static_cast<char>(std::tolower(static_cast<unsigned char>(pieceChar)));
@@ -167,6 +178,56 @@ void Terminal::start()
 		printBoard();
 
 		std::string input;
+		if (game_.getCurrentTurn() == Color::Black)
+		{
+			std::string fen = game_.getFEN();
+			std::string bestMove = game_.getStockfishEngine().getBestMove(fen, 10);
+			if (!bestMove.empty())
+			{
+				try
+				{
+					Position from(bestMove.substr(0, 2));
+					Position to(bestMove.substr(2, 2));
+					if (game_.isPromotionMove(from, to))
+					{
+						PieceType promotionType = askPromotionPiece();
+						game_.makeMove(from, to, promotionType);
+					}
+					else
+						game_.makeMove(from, to);
+				}
+				catch (const InvalidMoveException &e)
+				{
+					std::cerr << "Invalid move: " << e.what() << std::endl;
+					printInvalidMoveMessage();
+					continue;
+				}
+				catch (const InvalidPositionException &e)
+				{
+					std::cerr << "Invalid position: " << e.what() << std::endl;
+					printInvalidMoveMessage();
+					continue;
+				}
+				catch (const EmptySquareException &e)
+				{
+					std::cerr << "Empty square: " << e.what() << std::endl;
+					printInvalidMoveMessage();
+					continue;
+				}
+				catch (const std::exception &e)
+				{
+					std::cerr << "Error: " << e.what() << std::endl;
+					printInvalidMoveMessage();
+					continue;
+				}
+			}
+			else
+			{
+				std::cerr << "Stockfish did not return a valid move." << std::endl;
+				break;
+			}
+			continue; // Skip the rest of the loop for the computer's turn
+		}
 
 		std::cout << "Enter your move (e.g., e2 e4): ";
 
@@ -238,19 +299,19 @@ void Terminal::start()
 
 		Color sideToMove = game_.getCurrentTurn();
 		const Move *lastMove = game_.getLastMove();
-		if (ChessUtils::isCheckmate(game_.getBoard(), sideToMove, lastMove))
+		if (ChessGameRules::isCheckmate(game_.getBoard(), sideToMove, lastMove))
 		{
 			printGameResult(ChessGameResult::Checkmate);
 			break;
 		}
 
-		if (ChessUtils::isFiftyMoveRuleDraw(game_.getHalfMoveClock()))
+		if (ChessGameRules::isFiftyMoveRuleDraw(game_.getHalfMoveClock()))
 		{
 			printGameResult(ChessGameResult::Draw);
 			break;
 		}
 
-		if (ChessUtils::isStalemate(game_.getBoard(), sideToMove, lastMove))
+		if (ChessGameRules::isStalemate(game_.getBoard(), sideToMove, lastMove))
 		{
 			printGameResult(ChessGameResult::Stalemate);
 			break;

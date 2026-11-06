@@ -8,12 +8,13 @@
 class King : public Piece
 {
 public:
-	King(Color color, size_t hasMoved = 0);
+	explicit King(Color color);
 	King(const King &other) = delete;
 	King &operator=(const King &other) = delete;
 	~King() = default;
 
 	PieceType getType() const override;
-	std::vector<Position> getValidMoves(const Position currentPosition, const Board &board, CustomMoveType moveType = CustomMoveType::NONE) const override;
 
+protected:
+	std::vector<Position> computeValidMoves(const Position currentPosition, const Board &board, CustomMoveType customMoveType) const override;
 };

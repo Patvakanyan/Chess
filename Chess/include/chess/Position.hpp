@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <string>
+
 class Position
 {
 private:
@@ -13,7 +14,6 @@ public:
 	Position(const std::string &position);
 	int getX() const;
 	int getY() const;
-
 
 	std::string toString() const;
 	bool operator==(const Position &other) const;

@@ -8,11 +8,13 @@
 class Pawn : public Piece
 {
 public:
-	Pawn(Color color, size_t hasMoved = 0);
+	explicit Pawn(Color color);
 	Pawn(const Pawn &other) = delete;
 	Pawn &operator=(const Pawn &other) = delete;
 	~Pawn() = default;
 
 	PieceType getType() const override;
-	std::vector<Position> getValidMoves(const Position currentPosition, const Board &board, CustomMoveType moveType = CustomMoveType::NONE) const override;
+
+protected:
+	std::vector<Position> computeValidMoves(const Position currentPosition, const Board &board, CustomMoveType moveType) const override;
 };

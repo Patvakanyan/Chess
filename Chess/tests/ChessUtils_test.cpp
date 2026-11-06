@@ -12,7 +12,7 @@ namespace
 		board.initializeBoard();
 		board.placePiece(std::make_unique<King>(kingColor), kingPosition);
 		board.placePiece(std::move(attacker), attackerPosition);
-		return ChessUtils::isInCheck(board, kingColor);
+		return ChessAttackUtils::isInCheck(board, kingColor);
 	}
 
 	bool blockedRookIsNotCheck()
@@ -22,7 +22,7 @@ namespace
 		board.placePiece(std::make_unique<King>(Color::White), kingPosition);
 		board.placePiece(std::make_unique<Rook>(Color::Black), Position(0, 4));
 		board.placePiece(std::make_unique<Pawn>(Color::White), Position(2, 4));
-		return !ChessUtils::isInCheck(board, Color::White);
+		return !ChessAttackUtils::isInCheck(board, Color::White);
 	}
 
 	bool protectedQueenCheckmatesKing()
@@ -32,9 +32,9 @@ namespace
 		board.placePiece(std::make_unique<King>(Color::Black), Position(0, 0));
 		board.placePiece(std::make_unique<Queen>(Color::White), Position(1, 1));
 		board.placePiece(std::make_unique<King>(Color::White), Position(2, 2));
-		return ChessUtils::isInCheck(board, Color::Black) &&
-			   !ChessUtils::hasLegalMoves(board, Color::Black) &&
-			   ChessUtils::isCheckmate(board, Color::Black);
+		return ChessAttackUtils::isInCheck(board, Color::Black) &&
+			   !ChessGameRules::hasLegalMoves(board, Color::Black) &&
+			   ChessGameRules::isCheckmate(board, Color::Black);
 	}
 
 	bool checkWithKingEscapeIsNotCheckmate()
@@ -44,8 +44,8 @@ namespace
 		board.placePiece(std::make_unique<King>(Color::Black), Position(0, 0));
 		board.placePiece(std::make_unique<Queen>(Color::White), Position(1, 1));
 		board.placePiece(std::make_unique<King>(Color::White), Position(3, 3));
-		return ChessUtils::isInCheck(board, Color::Black) &&
-			   !ChessUtils::isCheckmate(board, Color::Black);
+		return ChessAttackUtils::isInCheck(board, Color::Black) &&
+			   !ChessGameRules::isCheckmate(board, Color::Black);
 	}
 
 	bool stalemateIsNotCheckmate()
@@ -55,8 +55,8 @@ namespace
 		board.placePiece(std::make_unique<King>(Color::Black), Position(0, 0));
 		board.placePiece(std::make_unique<Queen>(Color::White), Position(1, 2));
 		board.placePiece(std::make_unique<King>(Color::White), Position(2, 2));
-		return ChessUtils::isStalemate(board, Color::Black) &&
-			   !ChessUtils::isCheckmate(board, Color::Black);
+		return ChessGameRules::isStalemate(board, Color::Black) &&
+			   !ChessGameRules::isCheckmate(board, Color::Black);
 	}
 
 	bool ordinaryPositionIsNeitherCheckmateNorStalemate()
@@ -65,10 +65,10 @@ namespace
 		board.initializeBoard();
 		board.placePiece(std::make_unique<King>(Color::White), Position(4, 4));
 		board.placePiece(std::make_unique<King>(Color::Black), Position(0, 0));
-		return !ChessUtils::isInCheck(board, Color::White) &&
-			   ChessUtils::hasLegalMoves(board, Color::White) &&
-			   !ChessUtils::isCheckmate(board, Color::White) &&
-			   !ChessUtils::isStalemate(board, Color::White);
+		return !ChessAttackUtils::isInCheck(board, Color::White) &&
+			   ChessGameRules::hasLegalMoves(board, Color::White) &&
+			   !ChessGameRules::isCheckmate(board, Color::White) &&
+			   !ChessGameRules::isStalemate(board, Color::White);
 	}
 
 	bool fiftyMoveRuleUses100HalfMoves()
@@ -77,9 +77,9 @@ namespace
 		board.initializeBoard();
 		board.placePiece(std::make_unique<King>(Color::White), Position(4, 4));
 		board.placePiece(std::make_unique<King>(Color::Black), Position(0, 0));
-		return !ChessUtils::isStalemate(board, Color::White) &&
-			   !ChessUtils::isFiftyMoveRuleDraw(99) &&
-			   ChessUtils::isFiftyMoveRuleDraw(100);
+		return !ChessGameRules::isStalemate(board, Color::White) &&
+			   !ChessGameRules::isFiftyMoveRuleDraw(99) &&
+			   ChessGameRules::isFiftyMoveRuleDraw(100);
 	}
 
 	bool undoRestoresCapturedPieceMovementState()
@@ -99,10 +99,8 @@ namespace
 		blackRookCapture.makeMove(board);
 		history.addMove(blackRookCapture);
 
-		bool captureResetsClock = history.getHalfMoveClock() == 0;
-		return captureResetsClock && history.undoMove(board) &&
-			   history.getHalfMoveClock() == 1 &&
-			   board[0][1].getPiece()->getHasMoved() == 1;
+		return history.undoMove(board) &&
+			   board[0][1].getPiece()->getType() == PieceType::ROOK;
 	}
 
 	bool kingCannotBeCaptured()

@@ -203,7 +203,7 @@ QString GameController::statusText() const
 {
 	const Color turn = m_game.getCurrentTurn();
 	const QString side = (turn == Color::White) ? tr("White") : tr("Black");
-	if (ChessUtils::isInCheck(m_game.getBoard(), turn))
+	if (ChessAttackUtils::isInCheck(m_game.getBoard(), turn))
 		return tr("%1 to move \xE2\x80\x94 check!").arg(side); // em dash
 	return tr("%1 to move").arg(side);
 }
@@ -213,7 +213,7 @@ void GameController::announceGameEndIfAny()
 	Board &board = m_game.getBoard();
 	const Color turn = m_game.getCurrentTurn(); // side to move now, possibly mated/stalemated
 
-	if (ChessUtils::isCheckmate(board, turn))
+	if (ChessGameRules::isCheckmate(board, turn))
 	{
 		m_selected.reset();
 		m_scene->clearHighlights();
@@ -221,14 +221,14 @@ void GameController::announceGameEndIfAny()
 		emit statusChanged(tr("Checkmate \xE2\x80\x94 %1 wins!").arg(winner));
 		return;
 	}
-	if (ChessUtils::isStalemate(board, turn))
+	if (ChessGameRules::isStalemate(board, turn))
 	{
 		m_selected.reset();
 		m_scene->clearHighlights();
 		emit statusChanged(tr("Stalemate \xE2\x80\x94 draw."));
 		return;
 	}
-	if (ChessUtils::isFiftyMoveRuleDraw(m_game.getHalfMoveClock()))
+	if (ChessGameRules::isFiftyMoveRuleDraw(m_game.getHalfMoveClock()))
 	{
 		m_selected.reset();
 		m_scene->clearHighlights();
@@ -242,9 +242,9 @@ bool GameController::isGameFinished()
 {
 	Board &board = m_game.getBoard();
 	const Color turn = m_game.getCurrentTurn();
-	return ChessUtils::isCheckmate(board, turn) ||
-		   ChessUtils::isStalemate(board, turn) ||
-		   ChessUtils::isFiftyMoveRuleDraw(m_game.getHalfMoveClock());
+	return ChessGameRules::isCheckmate(board, turn) ||
+		   ChessGameRules::isStalemate(board, turn) ||
+		   ChessGameRules::isFiftyMoveRuleDraw(m_game.getHalfMoveClock());
 }
 
 

@@ -11,7 +11,9 @@ class Piece
 {
 protected:
 	Color color;
-	size_t hasMoved_;
+
+	virtual std::vector<Position> computeValidMoves(const Position currentPosition, const Board &board,
+													CustomMoveType moveType) const = 0;
 
 public:
 	Piece() = delete;
@@ -22,15 +24,9 @@ public:
 	Piece &operator=(const Piece &other) = default;
 	Piece(Piece &&other) noexcept;
 	Piece &operator=(Piece &&other) noexcept;
-	size_t getHasMoved() const;
-	void addHasMoved();
-
-	void setHasMoved(size_t hasMoved);
-	void subtractHasMoved();
-
 	Color getColor() const;
 	bool isValidMove(const Position currentPosition, const Position newPosition, const Board &board, CustomMoveType moveType = CustomMoveType::NONE) const;
+	std::vector<Position> getValidMoves(const Position currentPosition, const Board &board, CustomMoveType moveType = CustomMoveType::NONE) const;
 
 	virtual PieceType getType() const = 0;
-	virtual std::vector<Position> getValidMoves(const Position currentPosition, const Board &board, CustomMoveType moveType = CustomMoveType::NONE) const = 0;
 };

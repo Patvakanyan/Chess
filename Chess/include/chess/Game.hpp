@@ -1,12 +1,15 @@
 #pragma once
 
 #include "chess/Board.hpp"
+#include "chess/GameState.hpp"
 #include "chess/utils/Color.hpp"
 #include "chess/Position.hpp"
 #include "chess/MoveHistory.hpp"
+#include "chess/StockfishEngine.hpp"
 #include "chess/Move.hpp"
 #include "chess/exceptions/InvalidMoveException.hpp"
 #include "chess/exceptions/InvalidPositionException.hpp"
+#include <ostream>
 #include <string>
 
 class Game
@@ -15,9 +18,11 @@ private:
 	Board board_;
 	MoveHistory moveHistory_;
 
-	Color currentTurn_;
+	GameState state_;
+	std::string fen_;
 	bool gameOver_;
 
+	StockfishEngine stockfishEngine_;
 	void prepareBoard();
 
 public:
@@ -33,6 +38,12 @@ public:
 
 	void FENToBoard(const std::string &fen);
 	int getHalfMoveClock() const;
+
+	StockfishEngine &getStockfishEngine() ;
+	const std::string &getFEN() const;
+	void printFEN(std::ostream &out) const;
+	void printMoves(std::ostream &out) const;
+
 	void startGame(Color selectedColor);
 	bool isPromotionMove(const Position &from, const Position &to) const;
 	void makeMove(const Position &from, const Position &to, PieceType promotionType = PieceType::NONE);

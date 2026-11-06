@@ -6,38 +6,43 @@
 #include "chess/utils/EnumPiece.hpp"
 #include "chess/MoveHistory.hpp"
 #include "chess/Move.hpp"
+#include "chess/GameState.hpp"
 #include <string>
 #include <sstream>
 
 class Move;
 class MoveHistory;
 
-class ChessUtils
+namespace ChessAttackUtils
 {
-public:
-	ChessUtils() = delete;
-	~ChessUtils() = delete;
+	bool isSquareAttacked(const Board &board, const Position &pos, Color color);
+	bool isQueenRookAttacked(const Board &board, const Position &pos, Color color);
+	bool isQueenBishopAttacked(const Board &board, const Position &pos, Color color);
+	bool isKnightAttacked(const Board &board, const Position &pos, Color color);
+	bool isPawnAttacked(const Board &board, const Position &pos, Color color);
+	bool isKingAttacked(const Board &board, const Position &pos, Color color);
+	Position findPiece(const Board &board, Color color, PieceType type);
+	bool isInCheck(const Board &board, Color color);
+}
 
-	static bool isSquareAttacked(const Board &board, const Position &pos, Color color);
-	static bool isQueenRookAttacked(const Board &board, const Position &pos, Color color);
-	static bool isQueenBishopAttacked(const Board &board, const Position &pos, Color color);
-	static bool isKnightAttacked(const Board &board, const Position &pos, Color color);
-	static bool isPawnAttacked(const Board &board, const Position &pos, Color color);
-	static bool isKingAttacked(const Board &board, const Position &pos, Color color);
+namespace ChessGameRules
+{
+	bool hasLegalMoves(Board &board, Color color, const Move *lastMove = nullptr);
+	bool isCheckmate(Board &board, Color color, const Move *lastMove = nullptr);
+	bool isStalemate(Board &board, Color color, const Move *lastMove = nullptr);
+	bool isFiftyMoveRuleDraw(int halfMoveClock);
+}
 
-	static bool hasLegalMoves(Board &board, Color color, const Move *lastMove = nullptr);
-	static Position findPiece(const Board &board, Color color, PieceType type);
+namespace ChessPieceFactory
+{
+	std::unique_ptr<Piece> createPiece(PieceType type, Color color);
+	std::unique_ptr<Piece> createPromotedPiece(PieceType type, Color color);
+}
 
-	static PieceType charToPieceType(char c);
-	static void FENToBoard(const std::string &fen, Board &board, Color &currentTurn, MoveHistory &moveHistory);
-	static bool isInCheck(const Board &board, Color color);
-
-	static std::unique_ptr<Piece> createPiece(PieceType type, Color color, size_t hasMoved = 0);
-	static std::unique_ptr<Piece> createPromotedPiece(PieceType type, Color color);
-
-	static void setCastlingRights(Board &board, size_t kingeSideCastle, size_t queenSideCastle, Color color);
-	static std::string getCastlingRights(const Board &board);
-	static bool isCheckmate(Board &board, Color color, const Move *lastMove = nullptr);
-	static bool isStalemate(Board &board, Color color, const Move *lastMove = nullptr);
-	static bool isFiftyMoveRuleDraw(int halfMoveClock);
-};
+namespace ChessFenUtils
+{
+	PieceType charToPieceType(char c);
+	void FENToBoard(const std::string &fen, Board &board, GameState &state);
+	std::string getCastlingRights(const GameState &state);
+	std::string boardToFEN(const Board &board, const GameState &state);
+}

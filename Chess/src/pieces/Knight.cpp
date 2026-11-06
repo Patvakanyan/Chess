@@ -1,24 +1,20 @@
 #include "chess/pieces/Knight.hpp"
 
-Knight::Knight(Color color, size_t hasMoved) : Piece(color) {
-	setHasMoved(hasMoved);
-}
+Knight::Knight(Color color) : Piece(color) {}
 
 PieceType Knight::getType() const
 {
 	return PieceType::KNIGHT;
 }
 
-std::vector <Position> Knight::getValidMoves(const Position currentPosition, const Board &board, CustomMoveType) const
+std::vector<Position> Knight::computeValidMoves(const Position currentPosition, const Board &board, CustomMoveType) const
 {
 	std::vector<Position> validMoves;
 	int currentX = currentPosition.getX();
 	int currentY = currentPosition.getY();
 
 	const std::vector<std::pair<int, int>> knightMoves = {
-		{2, 1}, {2, -1}, {-2, 1}, {-2, -1},
-		{1, 2}, {1, -2}, {-1, 2}, {-1, -2}
-	};
+		{2, 1}, {2, -1}, {-2, 1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}};
 
 	for (const auto &move : knightMoves)
 	{

@@ -1,16 +1,13 @@
 #include "chess/pieces/Pawn.hpp"
 
-Pawn::Pawn(Color color, size_t hasMoved) : Piece(color)
-{
-	setHasMoved(hasMoved);
-}
+Pawn::Pawn(Color color) : Piece(color) {}
 
 PieceType Pawn::getType() const
 {
 	return PieceType::PAWN;
 }
 
-std::vector<Position> Pawn::getValidMoves(const Position currentPosition, const Board &board, CustomMoveType moveType) const
+std::vector<Position> Pawn::computeValidMoves(const Position currentPosition, const Board &board, CustomMoveType moveType) const
 {
 	std::vector<Position> validMoves;
 	int currentX = currentPosition.getX();
@@ -24,7 +21,7 @@ std::vector<Position> Pawn::getValidMoves(const Position currentPosition, const 
 	if (nextRow >= 0 && nextRow < 8 && board[nextRow][currentY].isEmpty())
 		validMoves.emplace_back(nextRow, currentY);
 	int twoStepRow = currentX + 2 * direction;
-	if (currentX == startingRow && getHasMoved() == 0 && twoStepRow >= 0 && twoStepRow < 8 && board[nextRow][currentY].isEmpty() && board[twoStepRow][currentY].isEmpty())
+	if (currentX == startingRow && twoStepRow >= 0 && twoStepRow < 8 && board[nextRow][currentY].isEmpty() && board[twoStepRow][currentY].isEmpty())
 		validMoves.emplace_back(twoStepRow, currentY);
 
 	for (int dx : {-1, 1})

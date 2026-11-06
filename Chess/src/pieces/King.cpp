@@ -1,15 +1,14 @@
 #include "chess/pieces/King.hpp"
 #include <iostream>
-King::King(Color color, size_t hasMoved) : Piece(color) {
-	setHasMoved(hasMoved);
-}
+
+King::King(Color color) : Piece(color) {}
 
 PieceType King::getType() const
 {
 	return PieceType::KING;
 }
 
-std::vector<Position> King::getValidMoves(const Position currentPosition, const Board &board, CustomMoveType type) const
+std::vector<Position> King::computeValidMoves(const Position currentPosition, const Board &board, CustomMoveType type) const
 {
 	std::vector<Position> validMoves;
 	int currentX = currentPosition.getX();

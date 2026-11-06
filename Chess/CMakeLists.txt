@@ -6,7 +6,10 @@ enable_testing()
 
 set(CHESS_SOURCES
     src/Board.cpp
-    src/ChessUtils.cpp
+    src/ChessAttackUtils.cpp
+    src/ChessGameRules.cpp
+    src/ChessPieceFactory.cpp
+    src/ChessFenUtils.cpp
     src/Game.cpp
     src/Move.cpp
     src/MoveHistory.cpp
@@ -18,6 +21,7 @@ set(CHESS_SOURCES
     src/exceptions/EmptySquareException.cpp
     src/exceptions/InvalidMove.cpp
     src/exceptions/InvalidPositionException.cpp
+	src/StockfishEngine.cpp
     src/pieces/Bishop.cpp
     src/pieces/King.cpp
     src/pieces/Knight.cpp
