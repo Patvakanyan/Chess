@@ -99,8 +99,10 @@ std::vector<Position> GameController::legalMovesFrom(const Position &from)
 	std::vector<Position> candidates = piece->getValidMoves(from, board);
 	if (piece->getType() == PieceType::KING)
 	{
-		candidates.emplace_back(from.getX(), 2);
-		candidates.emplace_back(from.getX(), 6);
+		if (m_game.canCastle(piece->getColor(), false))
+			candidates.emplace_back(from.getX(), 2);
+		if (m_game.canCastle(piece->getColor(), true))
+			candidates.emplace_back(from.getX(), 6);
 	}
 	if (piece->getType() == PieceType::PAWN)
 	{

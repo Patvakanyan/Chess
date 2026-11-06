@@ -50,4 +50,5 @@ public:
 	void undoMove();
 	Color getCurrentTurn() const;
 	const Move *getLastMove() const;
+	bool canCastle(Color color, bool kingside) const;
 };

@@ -1,6 +1,56 @@
 #include "chess/Game.hpp"
 #include "chess/utils/ChessUtils.hpp"
 
+namespace
+{
+void revokeCastlingRight(GameState &state, Color color, int column)
+{
+	if (color == Color::White)
+	{
+		if (column == 0)
+			state.castling.whiteQueenside = false;
+		else if (column == 7)
+			state.castling.whiteKingside = false;
+	}
+	else
+	{
+		if (column == 0)
+			state.castling.blackQueenside = false;
+		else if (column == 7)
+			state.castling.blackKingside = false;
+	}
+}
+
+void updateCastlingRights(GameState &state, const Move &move, Color color)
+{
+	if (move.getPieceType() == PieceType::KING)
+	{
+		if (color == Color::White)
+		{
+			state.castling.whiteKingside = false;
+			state.castling.whiteQueenside = false;
+		}
+		else
+		{
+			state.castling.blackKingside = false;
+			state.castling.blackQueenside = false;
+		}
+	}
+	else if (move.getPieceType() == PieceType::ROOK &&
+			 (move.getFrom().getY() == 0 || move.getFrom().getY() == 7))
+	{
+		revokeCastlingRight(state, color, move.getFrom().getY());
+	}
+
+	if (move.getCapturedPieceType() == PieceType::ROOK &&
+		(move.getCapturedPosition().getY() == 0 || move.getCapturedPosition().getY() == 7))
+	{
+		const Color capturedColor = color == Color::White ? Color::Black : Color::White;
+		revokeCastlingRight(state, capturedColor, move.getCapturedPosition().getY());
+	}
+}
+}
+
 Game::Game(const std::string fen) : board_(), moveHistory_(), state_(), gameOver_(false)
 {
 	fen_ = fen;
@@ -80,6 +130,16 @@ void Game::makeMove(const Position &from, const Position &to, PieceType promotio
 		throw EmptySquareException("No piece at the source position.");
 	else if (pieceToMove->getColor() != state_.turn)
 		throw InvalidMoveException("It's not your turn to move.");
+	if (pieceToMove->getType() == PieceType::KING && from.getY() == 4 &&
+		(to.getY() == 2 || to.getY() == 6))
+	{
+		const bool kingside = to.getY() == 6;
+		const bool allowed = pieceToMove->getColor() == Color::White
+								 ? (kingside ? state_.castling.whiteKingside : state_.castling.whiteQueenside)
+								 : (kingside ? state_.castling.blackKingside : state_.castling.blackQueenside);
+		if (!allowed)
+			throw InvalidMoveException("Castling rights have been lost.");
+	}
 	Move move(from, to);
 	try
 	{
@@ -97,6 +157,7 @@ void Game::makeMove(const Position &from, const Position &to, PieceType promotio
 		throw InvalidPositionException("Invalid position: " + std::string(e.what()));
 	}
 	state_.turn = (state_.turn == Color::White) ? Color::Black : Color::White;
+	updateCastlingRights(state_, move, pieceToMove->getColor());
 	moveHistory_.addMove(move);
 	state_.enPassantTarget.reset();
 	if (move.getPieceType() == PieceType::PAWN &&
@@ -130,6 +191,13 @@ Color Game::getCurrentTurn() const
 const Move *Game::getLastMove() const
 {
 	return moveHistory_.getMoves().empty() ? nullptr : &moveHistory_.getMoves().back();
+}
+
+bool Game::canCastle(Color color, bool kingside) const
+{
+	if (color == Color::White)
+		return kingside ? state_.castling.whiteKingside : state_.castling.whiteQueenside;
+	return kingside ? state_.castling.blackKingside : state_.castling.blackQueenside;
 }
 
 StockfishEngine &Game::getStockfishEngine()
