@@ -1,6 +1,6 @@
 #include "chess/utils/ChessUtils.hpp"
-#include "chess/MoveHistory.hpp"
 #include "chess/Game.hpp"
+#include <vector>
 
 namespace
 {
@@ -90,17 +90,18 @@ namespace
 		board.placePiece(std::make_unique<Rook>(Color::White), Position(0, 0));
 		board.placePiece(std::make_unique<Rook>(Color::Black), Position(0, 2));
 
-		MoveHistory history;
+		std::vector<Move> history;
 		Move whiteRookMove(Position(0, 0), Position(0, 1));
 		whiteRookMove.makeMove(board);
-		history.addMove(whiteRookMove);
+		history.push_back(whiteRookMove);
 
 		Move blackRookCapture(Position(0, 2), Position(0, 1));
 		blackRookCapture.makeMove(board);
-		history.addMove(blackRookCapture);
+		history.push_back(blackRookCapture);
 
-		return history.undoMove(board) &&
-			   board[0][1].getPiece()->getType() == PieceType::ROOK;
+		history.back().undoMove(board);
+		history.pop_back();
+		return board[0][1].getPiece()->getType() == PieceType::ROOK;
 	}
 
 	bool kingCannotBeCaptured()
@@ -151,6 +152,24 @@ namespace
 			historyCleared = true;
 		}
 		return historyCleared && game.getHalfMoveClock() == 0 && game.getCurrentTurn() == Color::Black;
+	}
+
+	bool loadingFenClearsMoveHistory()
+	{
+		Game game;
+		game.startGame(Color::White);
+		game.makeMove(Position(7, 1), Position(5, 2));
+		game.FENToBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
+		try
+		{
+			game.undoMove();
+		}
+		catch (const InvalidMoveException &)
+		{
+			return true;
+		}
+		return false;
 	}
 
 	bool runTest(const std::string &name, bool result)
@@ -205,6 +224,8 @@ int main()
 						 pawnDoubleStepRequiresStartingRank());
 	allPassed &= runTest("starting a new game clears move history",
 						 aNewGameClearsMoveHistory());
+	allPassed &= runTest("loading a FEN clears move history",
+						 loadingFenClearsMoveHistory());
 
 	return allPassed ? 0 : 1;
 }

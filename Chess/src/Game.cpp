@@ -68,22 +68,22 @@ const Board &Game::getBoard() const
 void Game::FENToBoard(const std::string &fen)
 {
 	ChessFenUtils::FENToBoard(fen, board_, state_);
+	moveHistory_.clear();
+	gameOver_ = false;
 	fen_ = ChessFenUtils::boardToFEN(board_, state_);
 }
 
 void Game::undoMove()
 {
-	if (moveHistory_.getMoves().empty())
+	if (moveHistory_.empty())
 		throw InvalidMoveException("No moves to undo.");
-	const Move &lastMove = moveHistory_.getMoves().back();
+	const Move &lastMove = moveHistory_.back();
 	state_.halfMoveClock = lastMove.getPreviousHalfMoveClock();
 	state_.turn = (state_.turn == Color::White) ? Color::Black : Color::White;
 	if (state_.turn == Color::Black && state_.fullMoveNumber > 1)
 		--state_.fullMoveNumber;
-	if (!moveHistory_.undoMove(board_))
-	{
-		throw InvalidMoveException("No moves to undo.");
-	}
+	lastMove.undoMove(board_);
+	moveHistory_.pop_back();
 	fen_ = ChessFenUtils::boardToFEN(board_, state_);
 	gameOver_ = false;
 }
@@ -143,9 +143,9 @@ void Game::makeMove(const Position &from, const Position &to, PieceType promotio
 	Move move(from, to);
 	try
 	{
-		const Move *lastMove = moveHistory_.getMoves().empty()
+		const Move *lastMove = moveHistory_.empty()
 								   ? nullptr
-								   : &moveHistory_.getMoves().back();
+								   : &moveHistory_.back();
 		move.makeMove(board_, lastMove, promotionType);
 	}
 	catch (const InvalidMoveException &e)
@@ -158,7 +158,7 @@ void Game::makeMove(const Position &from, const Position &to, PieceType promotio
 	}
 	state_.turn = (state_.turn == Color::White) ? Color::Black : Color::White;
 	updateCastlingRights(state_, move, pieceToMove->getColor());
-	moveHistory_.addMove(move);
+	moveHistory_.push_back(move);
 	state_.enPassantTarget.reset();
 	if (move.getPieceType() == PieceType::PAWN &&
 		std::abs(move.getFrom().getX() - move.getTo().getX()) == 2)
@@ -174,7 +174,7 @@ void Game::makeMove(const Position &from, const Position &to, PieceType promotio
 							   ? 0
 							   : state_.halfMoveClock + 1;
 	fen_ = ChessFenUtils::boardToFEN(board_, state_);
-	const Move *lastMove = &moveHistory_.getMoves().back();
+	const Move *lastMove = &moveHistory_.back();
 	printFEN(std::cout);
 	printMoves(std::cout);
 	if (ChessGameRules::isCheckmate(board_, state_.turn, lastMove) ||
@@ -190,7 +190,7 @@ Color Game::getCurrentTurn() const
 
 const Move *Game::getLastMove() const
 {
-	return moveHistory_.getMoves().empty() ? nullptr : &moveHistory_.getMoves().back();
+	return moveHistory_.empty() ? nullptr : &moveHistory_.back();
 }
 
 bool Game::canCastle(Color color, bool kingside) const
@@ -217,7 +217,7 @@ void Game::printFEN(std::ostream &out) const
 
 void Game::printMoves(std::ostream &out) const
 {
-	const std::vector<Move> &moves = moveHistory_.getMoves();
+	const std::vector<Move> &moves = moveHistory_;
 	if (moves.empty())
 	{
 		out << "No moves have been made yet.\n";

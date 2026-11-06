@@ -6,13 +6,13 @@ enable_testing()
 
 set(CHESS_SOURCES
     src/Board.cpp
-    src/ChessAttackUtils.cpp
-    src/ChessGameRules.cpp
-    src/ChessPieceFactory.cpp
-    src/ChessFenUtils.cpp
+    src/utils/ChessAttackUtils.cpp
+    src/utils/ChessGameRules.cpp
+    src/utils/ChessPieceFactory.cpp
+    src/utils/ChessFenUtils.cpp
+    src/utils/ChessMoveUtils.cpp
     src/Game.cpp
     src/Move.cpp
-    src/MoveHistory.cpp
     src/Piece.cpp
     src/Position.cpp
     src/Square.cpp

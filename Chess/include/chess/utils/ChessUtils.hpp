@@ -4,14 +4,12 @@
 #include "chess/utils/Color.hpp"
 #include "chess/Board.hpp"
 #include "chess/utils/EnumPiece.hpp"
-#include "chess/MoveHistory.hpp"
 #include "chess/Move.hpp"
 #include "chess/GameState.hpp"
 #include <string>
 #include <sstream>
 
 class Move;
-class MoveHistory;
 
 namespace ChessAttackUtils
 {
@@ -23,6 +21,17 @@ namespace ChessAttackUtils
 	bool isKingAttacked(const Board &board, const Position &pos, Color color);
 	Position findPiece(const Board &board, Color color, PieceType type);
 	bool isInCheck(const Board &board, Color color);
+}
+
+namespace ChessMoveUtils
+{
+	bool isEnPassant(const Board &board, const Position &from, const Position &to,
+					 const Move *lastMove);
+	bool isCastleKingside(const Board &board, const Position &from, const Position &to);
+	bool isCastleQueenside(const Board &board, const Position &from, const Position &to);
+	void validateMove(const Board &board, const Position &from, const Position &to,
+					  const Piece *pieceToMove, CustomMoveType moveType,
+					  PieceType promotionType);
 }
 
 namespace ChessGameRules

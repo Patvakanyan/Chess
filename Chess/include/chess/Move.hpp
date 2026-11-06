@@ -28,14 +28,9 @@ private:
 
 private:
 	void setPieceType(Piece *piece);
-	void validateMove(Board &board, Square *toSquare, Piece *pieceToMove,
-					  PieceType promotionType) const;
 	void prepareMove(Board &board, Square *toSquare, Piece *pieceToMove);
 	void executeMove(Board &board, Square *fromSquare, Square *toSquare,
 					 PieceType promotionType);
-	bool isEnPassant(const Board &board, const Move *lastMove) const;
-	bool isCastleKingside(const Board &board) const;
-	bool isCastleQueenside(const Board &board) const;
 
 public:
 	Move();

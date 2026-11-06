@@ -4,19 +4,19 @@
 #include "chess/GameState.hpp"
 #include "chess/utils/Color.hpp"
 #include "chess/Position.hpp"
-#include "chess/MoveHistory.hpp"
 #include "chess/StockfishEngine.hpp"
 #include "chess/Move.hpp"
 #include "chess/exceptions/InvalidMoveException.hpp"
 #include "chess/exceptions/InvalidPositionException.hpp"
 #include <ostream>
 #include <string>
+#include <vector>
 
 class Game
 {
 private:
 	Board board_;
-	MoveHistory moveHistory_;
+	std::vector<Move> moveHistory_;
 
 	GameState state_;
 	std::string fen_;
