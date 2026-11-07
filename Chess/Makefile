@@ -8,7 +8,7 @@ CPPFLAGS := -Iinclude -Iinclude/Chess
 CXXFLAGS := -Wall -Wextra -Werror -std=c++17 -g3
 CXXFLAGS += -MMD -MP
 
-SRC := $(wildcard src/*.cpp src/pieces/*.cpp src/exceptions/*.cpp)
+SRC := $(wildcard src/*.cpp src/utils/*.cpp src/pieces/*.cpp src/exceptions/*.cpp)
 OBJ := $(patsubst src/%.cpp,$(OBJ_DIR)/%.o,$(SRC))
 TEST_SRC := tests/ChessUtils_test.cpp
 TEST_OBJ := $(OBJ_DIR)/tests/ChessUtils_test.o
