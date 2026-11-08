@@ -3,52 +3,52 @@
 
 namespace
 {
-void revokeCastlingRight(GameState &state, Color color, int column)
-{
-	if (color == Color::White)
-	{
-		if (column == 0)
-			state.castling.whiteQueenside = false;
-		else if (column == 7)
-			state.castling.whiteKingside = false;
-	}
-	else
-	{
-		if (column == 0)
-			state.castling.blackQueenside = false;
-		else if (column == 7)
-			state.castling.blackKingside = false;
-	}
-}
-
-void updateCastlingRights(GameState &state, const Move &move, Color color)
-{
-	if (move.getPieceType() == PieceType::KING)
+	void revokeCastlingRight(GameState &state, Color color, int column)
 	{
 		if (color == Color::White)
 		{
-			state.castling.whiteKingside = false;
-			state.castling.whiteQueenside = false;
+			if (column == 0)
+				state.castling.whiteQueenside = false;
+			else if (column == 7)
+				state.castling.whiteKingside = false;
 		}
 		else
 		{
-			state.castling.blackKingside = false;
-			state.castling.blackQueenside = false;
+			if (column == 0)
+				state.castling.blackQueenside = false;
+			else if (column == 7)
+				state.castling.blackKingside = false;
 		}
 	}
-	else if (move.getPieceType() == PieceType::ROOK &&
-			 (move.getFrom().getY() == 0 || move.getFrom().getY() == 7))
-	{
-		revokeCastlingRight(state, color, move.getFrom().getY());
-	}
 
-	if (move.getCapturedPieceType() == PieceType::ROOK &&
-		(move.getCapturedPosition().getY() == 0 || move.getCapturedPosition().getY() == 7))
+	void updateCastlingRights(GameState &state, const Move &move, Color color)
 	{
-		const Color capturedColor = color == Color::White ? Color::Black : Color::White;
-		revokeCastlingRight(state, capturedColor, move.getCapturedPosition().getY());
+		if (move.getPieceType() == PieceType::KING)
+		{
+			if (color == Color::White)
+			{
+				state.castling.whiteKingside = false;
+				state.castling.whiteQueenside = false;
+			}
+			else
+			{
+				state.castling.blackKingside = false;
+				state.castling.blackQueenside = false;
+			}
+		}
+		else if (move.getPieceType() == PieceType::ROOK &&
+				 (move.getFrom().getY() == 0 || move.getFrom().getY() == 7))
+		{
+			revokeCastlingRight(state, color, move.getFrom().getY());
+		}
+
+		if (move.getCapturedPieceType() == PieceType::ROOK &&
+			(move.getCapturedPosition().getY() == 0 || move.getCapturedPosition().getY() == 7))
+		{
+			const Color capturedColor = color == Color::White ? Color::Black : Color::White;
+			revokeCastlingRight(state, capturedColor, move.getCapturedPosition().getY());
+		}
 	}
-}
 }
 
 Game::Game(const std::string fen) : board_(), moveHistory_(), state_(), gameOver_(false)
@@ -88,15 +88,15 @@ void Game::undoMove()
 	gameOver_ = false;
 }
 
-void Game::startGame(Color selectedColor)
+void Game::startGame()
 {
-	state_.turn = selectedColor;
 	gameOver_ = false;
 	moveHistory_.clear();
 	board_.initializeBoard();
-	stockfishEngine_.startEngine();
+	state_ = GameState();
 	ChessFenUtils::FENToBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", board_, state_);
-	state_.turn = selectedColor;
+	fen_ = ChessFenUtils::boardToFEN(board_, state_);
+	stockfishEngine_.startEngine();
 }
 
 int Game::getHalfMoveClock() const
@@ -164,13 +164,13 @@ void Game::makeMove(const Position &from, const Position &to, PieceType promotio
 		std::abs(move.getFrom().getX() - move.getTo().getX()) == 2)
 	{
 		state_.enPassantTarget = Position((move.getFrom().getX() + move.getTo().getX()) / 2,
-										 move.getFrom().getY());
+										  move.getFrom().getY());
 	}
 
 	if (state_.turn == Color::Black)
 		state_.fullMoveNumber++;
 	state_.halfMoveClock = (move.getPieceType() == PieceType::PAWN ||
-								move.getCapturedPieceType() != PieceType::NONE)
+							move.getCapturedPieceType() != PieceType::NONE)
 							   ? 0
 							   : state_.halfMoveClock + 1;
 	fen_ = ChessFenUtils::boardToFEN(board_, state_);

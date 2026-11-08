@@ -138,9 +138,9 @@ namespace
 	bool aNewGameClearsMoveHistory()
 	{
 		Game game;
-		game.startGame(Color::White);
+		game.startGame();
 		game.makeMove(Position(7, 1), Position(5, 2));
-		game.startGame(Color::Black);
+		game.startGame();
 
 		bool historyCleared = false;
 		try
@@ -151,13 +151,13 @@ namespace
 		{
 			historyCleared = true;
 		}
-		return historyCleared && game.getHalfMoveClock() == 0 && game.getCurrentTurn() == Color::Black;
+		return historyCleared && game.getHalfMoveClock() == 0 && game.getCurrentTurn() == Color::White;
 	}
 
 	bool loadingFenClearsMoveHistory()
 	{
 		Game game;
-		game.startGame(Color::White);
+		game.startGame();
 		game.makeMove(Position(7, 1), Position(5, 2));
 		game.FENToBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 

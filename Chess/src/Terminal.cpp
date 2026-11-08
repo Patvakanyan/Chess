@@ -9,19 +9,7 @@ Terminal::Terminal(Game &game) : game_(game) {}
 void Terminal::printWelcomeMessage() const
 {
 	std::cout << "Welcome to Chess!" << std::endl;
-	std::cout << "Select your color (White/Black): ";
-
-	std::string colorInput;
-	if (std::getline(std::cin, colorInput) && !colorInput.empty())
-	{
-		Color selectedColor = (colorInput == "White" || colorInput == "white") ? Color::White : Color::Black;
-		game_.startGame(selectedColor);
-	}
-	else
-	{
-		std::cout << "Invalid input. Defaulting to White." << std::endl;
-		game_.startGame(Color::White);
-	}
+	game_.startGame();
 }
 
 PieceType Terminal::askPromotionPiece() const
@@ -180,53 +168,29 @@ void Terminal::start()
 		std::string input;
 		if (game_.getCurrentTurn() == Color::Black)
 		{
-			std::string fen = game_.getFEN();
-			std::string bestMove = game_.getStockfishEngine().getBestMove(fen, 10);
-			if (!bestMove.empty())
+			try
 			{
-				try
+				std::string bestMove =
+					game_.getStockfishEngine().getBestMove(game_.getFEN(), 10);
+				if (bestMove.empty())
 				{
-					Position from(bestMove.substr(0, 2));
-					Position to(bestMove.substr(2, 2));
-					if (game_.isPromotionMove(from, to))
-					{
-						PieceType promotionType = askPromotionPiece();
-						game_.makeMove(from, to, promotionType);
-					}
-					else
-						game_.makeMove(from, to);
+					std::cerr << "Stockfish has no move (game over?)." << std::endl;
+					break;
 				}
-				catch (const InvalidMoveException &e)
-				{
-					std::cerr << "Invalid move: " << e.what() << std::endl;
-					printInvalidMoveMessage();
-					continue;
-				}
-				catch (const InvalidPositionException &e)
-				{
-					std::cerr << "Invalid position: " << e.what() << std::endl;
-					printInvalidMoveMessage();
-					continue;
-				}
-				catch (const EmptySquareException &e)
-				{
-					std::cerr << "Empty square: " << e.what() << std::endl;
-					printInvalidMoveMessage();
-					continue;
-				}
-				catch (const std::exception &e)
-				{
-					std::cerr << "Error: " << e.what() << std::endl;
-					printInvalidMoveMessage();
-					continue;
-				}
+
+				Position from(bestMove.substr(0, 2));
+				Position to(bestMove.substr(2, 2));
+				PieceType promotionType = PieceType::NONE;
+				if (bestMove.size() == 5)
+					promotionType = ChessFenUtils::charToPieceType(bestMove[4]);
+				game_.makeMove(from, to, promotionType);
 			}
-			else
+			catch (const std::exception &e)
 			{
-				std::cerr << "Stockfish did not return a valid move." << std::endl;
+				std::cerr << "Computer move failed: " << e.what() << std::endl;
 				break;
 			}
-			continue; // Skip the rest of the loop for the computer's turn
+			continue;
 		}
 
 		std::cout << "Enter your move (e.g., e2 e4): ";

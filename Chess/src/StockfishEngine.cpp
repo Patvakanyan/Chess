@@ -31,60 +31,75 @@ void StockfishEngine::workWithChildProcess()
 	if (dup2(pipeToStockfish_[0], STDIN_FILENO) == -1 || dup2(pipeFromStockfish_[1], STDOUT_FILENO) == -1)
 	{
 		std::cerr << "Failed to redirect pipes for Stockfish engine." << std::endl;
-		exit(EXIT_FAILURE);
+		_exit(EXIT_FAILURE);
 	}
 	close(pipeToStockfish_[0]);
 	close(pipeFromStockfish_[1]);
 	char *const args[] = {const_cast<char *>(stockfishPath_), nullptr};
 	execvp(stockfishPath_, args);
 	perror("Failed to execute Stockfish engine");
-	exit(EXIT_FAILURE);
+	_exit(EXIT_FAILURE);
 }
 
-std::string StockfishEngine::sendCommand(const std::string &command, std::string &target)
+std::string StockfishEngine::sendCommand(const std::string &command, const std::string &target)
 {
+	if (processId_ <= 0)
+		throw std::runtime_error("Stockfish is not running.");
+
+	const std::string line = command + "\n";
+	if (write(pipeToStockfish_[1], line.c_str(), line.size()) != static_cast<ssize_t>(line.size()))
+		throw std::runtime_error("Failed to write to Stockfish.");
+
+	if (target.empty())
+		return {};
+
 	std::string response;
-	if (processId_ > 0)
+	char buffer[1024];
+	while (true)
 	{
-		write(pipeToStockfish_[1], command.c_str(), command.size());
-		write(pipeToStockfish_[1], "\n", 1);
-		char buffer[1024];
-		while (true)
-		{
-			ssize_t bytesRead = read(pipeFromStockfish_[0], buffer, sizeof(buffer) - 1);
-			if (bytesRead <= 0)
-				break;
-			buffer[bytesRead] = '\0';
-			response = buffer;
-			if (response.find(target) != std::string::npos)
-				break;
-		}
+		size_t pos = response.find(target);
+		if (pos != std::string::npos && response.find('\n', pos) != std::string::npos)
+			return response;
+		ssize_t n = read(pipeFromStockfish_[0], buffer, sizeof(buffer));
+		if (n <= 0)
+			throw std::runtime_error("Stockfish closed unexpectedly.");
+		response.append(buffer, n);
 	}
-	return response;
 }
 
 std::string StockfishEngine::getBestMove(const std::string &fen, int depth)
 {
-	std::string command = "position fen " + fen + "\ngo depth " + std::to_string(depth);
-	std::string target = "bestmove";
-	std::string bestMoveResponse = sendCommand(command, target);
-	size_t bestMovePos = bestMoveResponse.find(target);
+	sendCommand("position fen " + fen, "");
+	std::string response = sendCommand("go depth " + std::to_string(depth), "bestmove");
 
-	if (bestMovePos != std::string::npos)
-	{
-		size_t moveStart = bestMovePos + target.length() + 1;
-		size_t moveEnd = bestMoveResponse.find(' ', moveStart);
-		if (moveEnd == std::string::npos)
-			moveEnd = bestMoveResponse.length();
-		return bestMoveResponse.substr(moveStart, moveEnd - moveStart);
-	}
-	else
-	{
-		throw std::runtime_error("Failed to get the best move from Stockfish engine.");
-	}
+	std::istringstream in(response.substr(response.find("bestmove")));
+	std::string word, move;
+	in >> word >> move;
+	if (move.empty() || move == "(none)")
+		return "";
+	return move;
 }
 int StockfishEngine::startEngine()
 {
+	if (processId_ > 0)
+		return 1;
+
+	if (pipeToStockfish_[0] == -1 || pipeToStockfish_[1] == -1)
+	{
+		closePipe(pipeToStockfish_);
+		if (pipe(pipeToStockfish_) == -1)
+			throw std::runtime_error("Failed to create pipes for Stockfish engine.");
+	}
+	if (pipeFromStockfish_[0] == -1 || pipeFromStockfish_[1] == -1)
+	{
+		closePipe(pipeFromStockfish_);
+		if (pipe(pipeFromStockfish_) == -1)
+		{
+			closePipe(pipeToStockfish_);
+			throw std::runtime_error("Failed to create pipes for Stockfish engine.");
+		}
+	}
+
 	processId_ = fork();
 	if (processId_ < 0)
 	{
@@ -100,6 +115,8 @@ int StockfishEngine::startEngine()
 		close(pipeFromStockfish_[1]);
 		pipeToStockfish_[0] = -1;
 		pipeFromStockfish_[1] = -1;
+		sendCommand("uci", "uciok");
+		sendCommand("isready", "readyok");
 	}
 	return 1;
 }

@@ -44,7 +44,7 @@ public:
 	void printFEN(std::ostream &out) const;
 	void printMoves(std::ostream &out) const;
 
-	void startGame(Color selectedColor);
+	void startGame();
 	bool isPromotionMove(const Position &from, const Position &to) const;
 	void makeMove(const Position &from, const Position &to, PieceType promotionType = PieceType::NONE);
 	void undoMove();

@@ -64,7 +64,7 @@ GameController::GameController(ChessScene *scene, QObject *parent)
 	connect(m_scene, &ChessScene::squareClicked,
 			this, &GameController::onSquareClicked);
 
-	m_game.startGame(Color::White); // lays out the board; White moves first
+	m_game.startGame(); // lays out the board; White moves first
 	refreshView();
 }
 
