@@ -74,7 +74,7 @@ void Terminal::printGameResult(ChessGameResult result) const
 	switch (result)
 	{
 	case ChessGameResult::Checkmate:
-		printCheckmateMessage(game_.getCurrentTurn() == Color::White ? Color::Black : Color::White);
+		printCheckmateMessage(oppositeColor(game_.getCurrentTurn()));
 		break;
 	case ChessGameResult::Stalemate:
 		printStalemateMessage();
@@ -112,30 +112,7 @@ void Terminal::printBoard() const
 			else
 			{
 				const Piece *piece = square.getPiece();
-				char pieceChar = '?';
-				switch (piece->getType())
-				{
-				case PieceType::KING:
-					pieceChar = 'K';
-					break;
-				case PieceType::QUEEN:
-					pieceChar = 'Q';
-					break;
-				case PieceType::ROOK:
-					pieceChar = 'R';
-					break;
-				case PieceType::BISHOP:
-					pieceChar = 'B';
-					break;
-				case PieceType::KNIGHT:
-					pieceChar = 'N';
-					break;
-				case PieceType::PAWN:
-					pieceChar = 'P';
-					break;
-				default:
-					break;
-				}
+				char pieceChar = pieceTypeToChar(piece->getType());
 
 				if (piece->getColor() == Color::Black)
 					pieceChar = static_cast<char>(std::tolower(static_cast<unsigned char>(pieceChar)));
@@ -261,23 +238,9 @@ void Terminal::start()
 			continue;
 		}
 
-		Color sideToMove = game_.getCurrentTurn();
-		const Move *lastMove = game_.getLastMove();
-		if (ChessGameRules::isCheckmate(game_.getBoard(), sideToMove, lastMove))
+		if (game_.isGameOver())
 		{
-			printGameResult(ChessGameResult::Checkmate);
-			break;
-		}
-
-		if (ChessGameRules::isFiftyMoveRuleDraw(game_.getHalfMoveClock()))
-		{
-			printGameResult(ChessGameResult::Draw);
-			break;
-		}
-
-		if (ChessGameRules::isStalemate(game_.getBoard(), sideToMove, lastMove))
-		{
-			printGameResult(ChessGameResult::Stalemate);
+			printGameResult(game_.getResult());
 			break;
 		}
 	}

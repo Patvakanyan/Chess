@@ -25,6 +25,7 @@ namespace ChessAttackUtils
 
 namespace ChessMoveUtils
 {
+	bool isPromotionMove(const Board &board, const Position &from, const Position &to);
 	bool isEnPassant(const Board &board, const Position &from, const Position &to,
 					 const Move *lastMove);
 	bool isCastleKingside(const Board &board, const Position &from, const Position &to);
@@ -36,6 +37,10 @@ namespace ChessMoveUtils
 
 namespace ChessGameRules
 {
+	std::vector<Position> legalMovesFrom(Board &board, const Position &from,
+										 const Move *lastMove = nullptr,
+										 bool canCastleQueenside = false,
+										 bool canCastleKingside = false);
 	bool hasLegalMoves(Board &board, Color color, const Move *lastMove = nullptr);
 	bool isCheckmate(Board &board, Color color, const Move *lastMove = nullptr);
 	bool isStalemate(Board &board, Color color, const Move *lastMove = nullptr);

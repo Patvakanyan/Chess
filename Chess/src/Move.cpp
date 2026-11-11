@@ -190,8 +190,8 @@ void Move::makeMove(Board &board, const Move *lastMove, PieceType promotionType)
 	else if (pieceToMove != nullptr && pieceToMove->getType() == PieceType::PAWN &&
 			 ChessMoveUtils::isEnPassant(board, from_, to_, lastMove))
 		customMoveType_ = CustomMoveType::EN_PASSANT;
-	else if (pieceToMove != nullptr && pieceToMove->getType() == PieceType::PAWN &&
-			 (to_.getX() == 0 || to_.getX() == 7))
+	else if (pieceToMove != nullptr &&
+			 ChessMoveUtils::isPromotionMove(board, from_, to_))
 		customMoveType_ = CustomMoveType::PROMOTION;
 
 	ChessMoveUtils::validateMove(board, from_, to_, pieceToMove,
@@ -236,8 +236,7 @@ void Move::undoMove(Board &board) const
 	if (capturedPieceType_ != PieceType::NONE)
 	{
 		const Color movingColor = fromSquare->getPiece()->getColor();
-		const Color capturedColor =
-			movingColor == Color::White ? Color::Black : Color::White;
+		const Color capturedColor = oppositeColor(movingColor);
 		std::unique_ptr<Piece> capturedPiece =
 			ChessPieceFactory::createPiece(capturedPieceType_, capturedColor);
 		board[capturedPosition_.getX()][capturedPosition_.getY()]

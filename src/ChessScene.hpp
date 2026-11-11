@@ -83,6 +83,7 @@ private:
 	void drawBoardSquares();
 	void drawCoordinates();
 	void clearPieces();
+	void removePieceItem(int row, int column);
 	QGraphicsPathItem *createPieceItem(const PieceView &piece, int row, int column);
 	const QPainterPath &glyphPath(PieceKind kind);
 

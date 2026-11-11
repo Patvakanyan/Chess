@@ -33,29 +33,6 @@ namespace
 		}
 	}
 
-	bool isLegalCandidate(Board &board, const Position &from,
-						  const Position &to,
-						  const Move *lastMove)
-	{
-		Move simulation(from, to);
-		const Piece *piece = board[from.getX()][from.getY()].getPiece();
-		const PieceType promotionType =
-			piece != nullptr && piece->getType() == PieceType::PAWN &&
-					(to.getX() == 0 || to.getX() == 7)
-				? PieceType::QUEEN
-				: PieceType::NONE;
-		try
-		{
-			simulation.makeMove(board, lastMove, promotionType);
-		}
-		catch (const InvalidMoveException &)
-		{
-			return false;
-		}
-
-		simulation.undoMove(board);
-		return true;
-	}
 } // namespace
 
 GameController::GameController(ChessScene *scene, QObject *parent)
@@ -89,37 +66,7 @@ ChessScene::Board GameController::snapshot() const
 
 std::vector<Position> GameController::legalMovesFrom(const Position &from)
 {
-	std::vector<Position> legal;
-
-	Board &board = m_game.getBoard();
-	Piece *piece = board[from.getX()][from.getY()].getPiece();
-	if (piece == nullptr)
-		return legal;
-
-	std::vector<Position> candidates = piece->getValidMoves(from, board);
-	if (piece->getType() == PieceType::KING)
-	{
-		if (m_game.canCastle(piece->getColor(), false))
-			candidates.emplace_back(from.getX(), 2);
-		if (m_game.canCastle(piece->getColor(), true))
-			candidates.emplace_back(from.getX(), 6);
-	}
-	if (piece->getType() == PieceType::PAWN)
-	{
-		const std::vector<Position> enPassantMoves =
-			piece->getValidMoves(from, board, CustomMoveType::EN_PASSANT);
-		candidates.insert(candidates.end(), enPassantMoves.begin(),
-						  enPassantMoves.end());
-	}
-
-	for (const Position &to : candidates)
-	{
-		if (std::find(legal.begin(), legal.end(), to) != legal.end())
-			continue;
-		if (isLegalCandidate(board, from, to, m_game.getLastMove()))
-			legal.push_back(to);
-	}
-	return legal;
+	return m_game.legalMovesFrom(from);
 }
 
 void GameController::onSquareClicked(int row, int column)
@@ -135,10 +82,8 @@ void GameController::onSquareClicked(int row, int column)
 	if (m_selected)
 	{
 		PieceType promotionType = PieceType::NONE;
-
 		const std::vector<Position> legal = legalMovesFrom(*m_selected);
 		const bool isLegal = std::find(legal.begin(), legal.end(), clicked) != legal.end();
-
 		if (isLegal && m_game.isPromotionMove(*m_selected, clicked))
 		{
 			const bool white = (m_game.getCurrentTurn() == Color::White);
@@ -150,8 +95,7 @@ void GameController::onSquareClicked(int row, int column)
 		try
 		{
 			m_game.makeMove(*m_selected, clicked, promotionType);
-			m_selected.reset();
-			m_scene->clearHighlights();
+			clearSelection();
 			refreshView();
 			announceGameEndIfAny();
 			return;
@@ -212,44 +156,36 @@ QString GameController::statusText() const
 
 void GameController::announceGameEndIfAny()
 {
-	Board &board = m_game.getBoard();
-	const Color turn = m_game.getCurrentTurn(); // side to move now, possibly mated/stalemated
-
-	if (ChessGameRules::isCheckmate(board, turn))
+	switch (m_game.getResult())
 	{
-		m_selected.reset();
-		m_scene->clearHighlights();
+	case ChessGameResult::Checkmate:
+	{
+		const Color turn = m_game.getCurrentTurn();
+		clearSelection();
 		const QString winner = (turn == Color::White) ? tr("Black") : tr("White");
 		emit statusChanged(tr("Checkmate \xE2\x80\x94 %1 wins!").arg(winner));
 		return;
 	}
-	if (ChessGameRules::isStalemate(board, turn))
-	{
-		m_selected.reset();
-		m_scene->clearHighlights();
+	case ChessGameResult::Stalemate:
+		clearSelection();
 		emit statusChanged(tr("Stalemate \xE2\x80\x94 draw."));
 		return;
-	}
-	if (ChessGameRules::isFiftyMoveRuleDraw(m_game.getHalfMoveClock()))
-	{
-		m_selected.reset();
-		m_scene->clearHighlights();
+	case ChessGameResult::Draw:
+		clearSelection();
 		emit statusChanged(tr("Draw by the 50-move rule."));
 		return;
+	default:
+		return;
 	}
-	// No terminal condition; keep the normal "X to move" / check status.
+}
+
+void GameController::clearSelection()
+{
+	m_selected.reset();
+	m_scene->clearHighlights();
 }
 
 bool GameController::isGameFinished()
 {
-	Board &board = m_game.getBoard();
-	const Color turn = m_game.getCurrentTurn();
-	return ChessGameRules::isCheckmate(board, turn) ||
-		   ChessGameRules::isStalemate(board, turn) ||
-		   ChessGameRules::isFiftyMoveRuleDraw(m_game.getHalfMoveClock());
-}
-
-
-GameController::~GameController() {
-
+	return m_game.isGameOver();
 }

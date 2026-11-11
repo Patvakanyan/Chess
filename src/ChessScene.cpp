@@ -174,14 +174,19 @@ void ChessScene::clearPieces()
 	{
 		for (int column = 0; column < kBoardSize; ++column)
 		{
-			if (QGraphicsPathItem *item = m_items[row][column])
-			{
-				removeItem(item);
-				delete item;
-				m_items[row][column] = nullptr;
-			}
+			removePieceItem(row, column);
 			m_board[row][column].reset();
 		}
+	}
+}
+
+void ChessScene::removePieceItem(int row, int column)
+{
+	if (QGraphicsPathItem *item = m_items[row][column])
+	{
+		removeItem(item);
+		delete item;
+		m_items[row][column] = nullptr;
 	}
 }
 
@@ -190,12 +195,7 @@ void ChessScene::setPiece(int row, int column, std::optional<PieceView> piece)
 	if (row < 0 || row >= kBoardSize || column < 0 || column >= kBoardSize)
 		return;
 
-	if (QGraphicsPathItem *old = m_items[row][column])
-	{
-		removeItem(old);
-		delete old;
-		m_items[row][column] = nullptr;
-	}
+	removePieceItem(row, column);
 
 	m_board[row][column] = piece;
 	if (piece)

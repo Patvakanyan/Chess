@@ -2,6 +2,36 @@
 
 namespace ChessAttackUtils
 {
+namespace
+{
+	bool isSlidingPieceAttacked(const Board &board, const Position &pos,
+								Color color,
+								const std::vector<std::pair<int, int>> &directions,
+								PieceType secondaryType)
+	{
+		for (const auto &direction : directions)
+		{
+			int x = pos.getX() + direction.first;
+			int y = pos.getY() + direction.second;
+			while (x >= 0 && x < 8 && y >= 0 && y < 8)
+			{
+				const Square &square = board[x][y];
+				if (!square.isEmpty())
+				{
+					const Piece *piece = square.getPiece();
+					if (piece->getColor() == color &&
+						(piece->getType() == PieceType::QUEEN ||
+						 piece->getType() == secondaryType))
+						return true;
+					break;
+				}
+				x += direction.first;
+				y += direction.second;
+			}
+		}
+		return false;
+	}
+}
 
 Position findPiece(const Board &board, Color color, PieceType type)
 {
@@ -19,62 +49,16 @@ Position findPiece(const Board &board, Color color, PieceType type)
 
 bool isQueenBishopAttacked(const Board &board, const Position &pos, Color color)
 {
-	const std::vector<Position> directions = {
-		Position(-1, -1), Position(-1, 1),
-		Position(1, -1), Position(1, 1)};
-
-	for (auto dir : directions)
-	{
-		int currentX = pos.getX() + dir.getX();
-		int currentY = pos.getY() + dir.getY();
-		while (currentX >= 0 && currentX < 8 && currentY >= 0 && currentY < 8)
-		{
-			const Square &square = board[currentX][currentY];
-			if (!square.isEmpty())
-			{
-				Piece *piece = square.getPiece();
-				if (piece->getColor() == color && (piece->getType() == PieceType::QUEEN || piece->getType() == PieceType::BISHOP))
-				{
-					return true;
-				}
-				break;
-			}
-			currentX += dir.getX();
-			currentY += dir.getY();
-		}
-	}
-	return false;
+	const std::vector<std::pair<int, int>> offsets = {
+		{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
+	return isSlidingPieceAttacked(board, pos, color, offsets, PieceType::BISHOP);
 }
 
 bool isQueenRookAttacked(const Board &board, const Position &pos, Color color)
 {
-	const std::vector<Position> directions = {
-		Position(-1, 0), Position(1, 0),
-		Position(0, -1), Position(0, 1)};
-
-	for (auto dir : directions)
-	{
-		int currentX = pos.getX() + dir.getX();
-		int currentY = pos.getY() + dir.getY();
-		while (currentX >= 0 && currentX < 8 && currentY >= 0 && currentY < 8)
-		{
-			const Square &square = board[currentX][currentY];
-
-			if (!square.isEmpty())
-			{
-				Piece *piece = square.getPiece();
-				if (piece->getColor() == color &&
-					(piece->getType() == PieceType::QUEEN || piece->getType() == PieceType::ROOK))
-				{
-					return true;
-				}
-				break;
-			}
-			currentX += dir.getX();
-			currentY += dir.getY();
-		}
-	}
-	return false;
+	const std::vector<std::pair<int, int>> offsets = {
+		{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+	return isSlidingPieceAttacked(board, pos, color, offsets, PieceType::ROOK);
 }
 
 bool isKnightAttacked(const Board &board, const Position &pos, Color color)
@@ -107,7 +91,7 @@ bool isPawnAttacked(const Board &board, const Position &pos, Color color)
 {
 	// To find attackers of this square, inspect the row opposite the pawn's
 	// movement direction.
-	int direction = (color == Color::White) ? 1 : -1;
+	int direction = color == Color::White ? 1 : -1;
 	std::vector<Position> pawnAttacks = {
 		Position(direction, -1),
 		Position(direction, 1)};
@@ -173,7 +157,7 @@ bool isInCheck(const Board &board, Color color)
 	{
 		throw std::runtime_error("King not found on the board.");
 	}
-	Color opponentColor = (color == Color::White) ? Color::Black : Color::White;
+	Color opponentColor = oppositeColor(color);
 	return isSquareAttacked(board, kingPos, opponentColor);
 }
 

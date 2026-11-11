@@ -8,6 +8,7 @@
 #include "chess/Move.hpp"
 #include "chess/exceptions/InvalidMoveException.hpp"
 #include "chess/exceptions/InvalidPositionException.hpp"
+#include "chess/utils/ChessGameResult.hpp"
 #include <ostream>
 #include <string>
 #include <vector>
@@ -21,7 +22,7 @@ private:
 	GameState state_;
 	std::string fen_;
 	bool gameOver_;
-
+	ChessGameResult result_;
 	StockfishEngine stockfishEngine_;
 	void prepareBoard();
 
@@ -47,6 +48,9 @@ public:
 	void startGame();
 	bool isPromotionMove(const Position &from, const Position &to) const;
 	void makeMove(const Position &from, const Position &to, PieceType promotionType = PieceType::NONE);
+	std::vector<Position> legalMovesFrom(const Position &from);
+	bool isGameOver() const;
+	ChessGameResult getResult() const;
 	void undoMove();
 	Color getCurrentTurn() const;
 	const Move *getLastMove() const;

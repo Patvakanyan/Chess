@@ -45,13 +45,15 @@ namespace
 		if (move.getCapturedPieceType() == PieceType::ROOK &&
 			(move.getCapturedPosition().getY() == 0 || move.getCapturedPosition().getY() == 7))
 		{
-			const Color capturedColor = color == Color::White ? Color::Black : Color::White;
+			const Color capturedColor = oppositeColor(color);
 			revokeCastlingRight(state, capturedColor, move.getCapturedPosition().getY());
 		}
 	}
 }
 
-Game::Game(const std::string fen) : board_(), moveHistory_(), state_(), gameOver_(false)
+Game::Game(const std::string fen)
+	: board_(), moveHistory_(), state_(), gameOver_(false),
+	  result_(ChessGameResult::Ongoing)
 {
 	fen_ = fen;
 }
@@ -70,6 +72,7 @@ void Game::FENToBoard(const std::string &fen)
 	ChessFenUtils::FENToBoard(fen, board_, state_);
 	moveHistory_.clear();
 	gameOver_ = false;
+	result_ = ChessGameResult::Ongoing;
 	fen_ = ChessFenUtils::boardToFEN(board_, state_);
 }
 
@@ -79,18 +82,20 @@ void Game::undoMove()
 		throw InvalidMoveException("No moves to undo.");
 	const Move &lastMove = moveHistory_.back();
 	state_.halfMoveClock = lastMove.getPreviousHalfMoveClock();
-	state_.turn = (state_.turn == Color::White) ? Color::Black : Color::White;
+	state_.turn = oppositeColor(state_.turn);
 	if (state_.turn == Color::Black && state_.fullMoveNumber > 1)
 		--state_.fullMoveNumber;
 	lastMove.undoMove(board_);
 	moveHistory_.pop_back();
 	fen_ = ChessFenUtils::boardToFEN(board_, state_);
 	gameOver_ = false;
+	result_ = ChessGameResult::Ongoing;
 }
 
 void Game::startGame()
 {
 	gameOver_ = false;
+	result_ = ChessGameResult::Ongoing;
 	moveHistory_.clear();
 	board_.initializeBoard();
 	state_ = GameState();
@@ -106,16 +111,7 @@ int Game::getHalfMoveClock() const
 
 bool Game::isPromotionMove(const Position &from, const Position &to) const
 {
-	const Square *fromSquare = &board_[from.getX()][from.getY()];
-	if (fromSquare->isEmpty())
-		return false;
-
-	const Piece *movingPiece = fromSquare->getPiece();
-	if (movingPiece->getType() != PieceType::PAWN)
-		return false;
-
-	int promotionRow = (movingPiece->getColor() == Color::White) ? 0 : 7;
-	return to.getX() == promotionRow;
+	return ChessMoveUtils::isPromotionMove(board_, from, to);
 }
 
 void Game::makeMove(const Position &from, const Position &to, PieceType promotionType)
@@ -134,9 +130,7 @@ void Game::makeMove(const Position &from, const Position &to, PieceType promotio
 		(to.getY() == 2 || to.getY() == 6))
 	{
 		const bool kingside = to.getY() == 6;
-		const bool allowed = pieceToMove->getColor() == Color::White
-								 ? (kingside ? state_.castling.whiteKingside : state_.castling.whiteQueenside)
-								 : (kingside ? state_.castling.blackKingside : state_.castling.blackQueenside);
+		const bool allowed = canCastle(pieceToMove->getColor(), kingside);
 		if (!allowed)
 			throw InvalidMoveException("Castling rights have been lost.");
 	}
@@ -156,7 +150,7 @@ void Game::makeMove(const Position &from, const Position &to, PieceType promotio
 	{
 		throw InvalidPositionException("Invalid position: " + std::string(e.what()));
 	}
-	state_.turn = (state_.turn == Color::White) ? Color::Black : Color::White;
+	state_.turn = oppositeColor(state_.turn);
 	updateCastlingRights(state_, move, pieceToMove->getColor());
 	moveHistory_.push_back(move);
 	state_.enPassantTarget.reset();
@@ -177,10 +171,37 @@ void Game::makeMove(const Position &from, const Position &to, PieceType promotio
 	const Move *lastMove = &moveHistory_.back();
 	printFEN(std::cout);
 	printMoves(std::cout);
-	if (ChessGameRules::isCheckmate(board_, state_.turn, lastMove) ||
-		ChessGameRules::isStalemate(board_, state_.turn, lastMove) ||
-		ChessGameRules::isFiftyMoveRuleDraw(state_.halfMoveClock))
-		gameOver_ = true;
+	if (ChessGameRules::isCheckmate(board_, state_.turn, lastMove))
+		result_ = ChessGameResult::Checkmate;
+	else if (ChessGameRules::isStalemate(board_, state_.turn, lastMove))
+		result_ = ChessGameResult::Stalemate;
+	else if (ChessGameRules::isFiftyMoveRuleDraw(state_.halfMoveClock))
+		result_ = ChessGameResult::Draw;
+	else
+		result_ = ChessGameResult::Ongoing;
+	gameOver_ = result_ != ChessGameResult::Ongoing;
+}
+
+std::vector<Position> Game::legalMovesFrom(const Position &from)
+{
+	const Piece *piece = board_[from.getX()][from.getY()].getPiece();
+	if (piece == nullptr || piece->getColor() != state_.turn)
+		return {};
+
+	return ChessGameRules::legalMovesFrom(
+		board_, from, getLastMove(),
+		canCastle(piece->getColor(), false),
+		canCastle(piece->getColor(), true));
+}
+
+bool Game::isGameOver() const
+{
+	return gameOver_;
+}
+
+ChessGameResult Game::getResult() const
+{
+	return result_;
 }
 
 Color Game::getCurrentTurn() const

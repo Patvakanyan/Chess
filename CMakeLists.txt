@@ -27,6 +27,9 @@ qt_add_executable(appchessGui_2
     src/GameController.hpp
     src/mainwindow.cpp
     src/mainwindow.h
+    src/GameMode.hpp
+    src/StartPage.cpp
+    src/StartPage.hpp
 )
 
 set_target_properties(appchessGui_2 PROPERTIES

@@ -14,8 +14,6 @@
 
 #include "ChessScene.hpp"
 
-// Bridges ChessScene (Qt, drawing, mouse clicks) and Game (the chess engine,
-// no Qt dependency). This is the only class that knows about both.
 class GameController : public QObject
 {
 	Q_OBJECT
@@ -32,21 +30,17 @@ private slots:
 
 private:
 	ChessScene::Board snapshot() const;
-	// Legal destinations for the piece at `from` -- getValidMoves() is only
-	// pseudo-legal (it doesn't know about check), so each candidate move is
-	// simulated and rejected if it leaves the mover's own king in check,
-	// exactly the way ChessUtils::hasLegalMoves does internally.
+
+
 	std::vector<Position> legalMovesFrom(const Position &from);
 	void trySelect(const Position &clicked);
 	void refreshView();
 	void announceGameEndIfAny();
+	void clearSelection();
 	bool isGameFinished();
 	QString statusText() const;
-
-	static QPixmap pieceIcon(PieceKind kind, bool white, int size);
 
 	Game m_game;
 	ChessScene *m_scene;
 	std::optional<Position> m_selected;
-	~GameController();
 };
