@@ -20,9 +20,10 @@ For the engine-specific design and terminal usage, see the
 - CMake 3.16 or newer
 - A C++17-compatible compiler
 - Qt 6.10 or newer
-- GNU Make (optional, for the engine-only workflow)
-- Stockfish executable on `PATH` when using Stockfish mode or the terminal
-  computer-player workflow
+- GNU Make (required only when CMake needs to build the bundled Stockfish
+  fallback)
+- A Stockfish executable on `PATH` is optional. If it is not found, CMake
+  downloads and builds Stockfish during the build.
 
 ## GUI game modes
 
@@ -34,8 +35,8 @@ When the GUI starts, choose one of the following modes:
   Black. The engine move is calculated after each legal White move.
 
 The GUI reports Stockfish startup and move errors in the game status area.
-Install Stockfish separately and make sure the `stockfish` command can be
-resolved through `PATH` before selecting this mode.
+If Stockfish is already installed, CMake uses the executable found through
+`PATH`; otherwise the first build downloads and builds it automatically.
 
 ## Build the GUI
 

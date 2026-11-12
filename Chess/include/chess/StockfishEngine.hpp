@@ -9,10 +9,14 @@
 #include <sstream>
 #include "Move.hpp"
 
+#ifndef CHESS_STOCKFISH_PATH
+#define CHESS_STOCKFISH_PATH "stockfish"
+#endif
+
 class StockfishEngine
 {
 private:
-	const char *stockfishPath_ = "stockfish";
+	const char *stockfishPath_ = CHESS_STOCKFISH_PATH;
 	pid_t processId_;
 	int pipeToStockfish_[2] = {-1, -1};	  // Pipe for sending commands to Stockfish
 	int pipeFromStockfish_[2] = {-1, -1}; // Pipe for receiving output from Stockfish
