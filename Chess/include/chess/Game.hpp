@@ -45,7 +45,7 @@ public:
 	void printFEN(std::ostream &out) const;
 	void printMoves(std::ostream &out) const;
 
-	void startGame();
+	void startGame(bool startEngine = true);
 	bool isPromotionMove(const Position &from, const Position &to) const;
 	void makeMove(const Position &from, const Position &to, PieceType promotionType = PieceType::NONE);
 	std::vector<Position> legalMovesFrom(const Position &from);

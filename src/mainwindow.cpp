@@ -68,7 +68,7 @@ void MainWindow::startGame(GameMode mode)
 	layout->addWidget(m_boardView, 1);
 	layout->addWidget(createControlPanel(m_gamePage, mode));
 
-	m_controller = new GameController(m_scene, m_gamePage);
+	m_controller = new GameController(m_scene, m_gamePage, mode);
 	connect(m_controller, &GameController::statusChanged,
 			m_statusLabel, &QLabel::setText);
 

@@ -1,4 +1,5 @@
 #include "../include/chess/StockfishEngine.hpp"
+#include "chess/utils/ChessUtils.hpp"
 
 StockfishEngine::StockfishEngine() : processId_(-1)
 {
@@ -67,7 +68,7 @@ std::string StockfishEngine::sendCommand(const std::string &command, const std::
 	}
 }
 
-std::string StockfishEngine::getBestMove(const std::string &fen, int depth)
+Move StockfishEngine::getBestMove(const std::string &fen, int depth)
 {
 	sendCommand("position fen " + fen, "");
 	std::string response = sendCommand("go depth " + std::to_string(depth), "bestmove");
@@ -76,8 +77,13 @@ std::string StockfishEngine::getBestMove(const std::string &fen, int depth)
 	std::string word, move;
 	in >> word >> move;
 	if (move.empty() || move == "(none)")
-		return "";
-	return move;
+		throw std::runtime_error("Stockfish returned no move.");
+	if (move.size() != 4 && move.size() != 5)
+		throw std::runtime_error("Stockfish returned an invalid move.");
+	const PieceType promotionType =
+		move.size() == 5 ? ChessFenUtils::charToPieceType(move[4]) : PieceType::NONE;
+	return Move(Position(move.substr(0, 2)), Position(move.substr(2, 2)),
+				promotionType);
 }
 int StockfishEngine::startEngine()
 {
@@ -146,7 +152,7 @@ int main()
 	StockfishEngine engine;
 	std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 	engine.startEngine();
-	std::string bestMove = engine.getBestMove(fen, 10);
+	Move bestMove = engine.getBestMove(fen, 10);
 	engine.stopEngine();
 	return 0;
 }

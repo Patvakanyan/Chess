@@ -11,15 +11,15 @@
 #include "PromotionDialog.hpp"
 #include "chess/Game.hpp"
 #include "chess/Position.hpp"
-
 #include "ChessScene.hpp"
+#include "GameMode.hpp"
 
 class GameController : public QObject
 {
 	Q_OBJECT
 
 public:
-	explicit GameController(ChessScene *scene, QObject *parent = nullptr);
+	explicit GameController(ChessScene *scene, QObject *parent = nullptr, GameMode mode = GameMode::VsStockfish);
 
 signals:
 	// Human-readable status text: whose move it is, check, checkmate, etc.
@@ -40,7 +40,9 @@ private:
 	bool isGameFinished();
 	QString statusText() const;
 
+	bool m_engineThinking = false;
 	Game m_game;
+	GameMode m_mode;
 	ChessScene *m_scene;
 	std::optional<Position> m_selected;
 };

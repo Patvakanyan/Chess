@@ -13,13 +13,14 @@ Move::Move()
 {
 }
 
-Move::Move(const Position &from, const Position &to)
+Move::Move(const Position &from, const Position &to, PieceType promotionType)
 	: from_(from),
 	  to_(to),
 	  pieceType_(PieceType::NONE),
 	  capturedPieceType_(PieceType::NONE),
 	  capturedPieceHasMoved_(0),
 	  capturedPosition_(to),
+	  promotionType_(promotionType),
 	  movingPieceHasMoved_(0),
 	  previousHalfMoveClock_(0)
 {
@@ -33,6 +34,11 @@ const Position &Move::getFrom() const
 const Position &Move::getTo() const
 {
 	return to_;
+}
+
+PieceType Move::getPromotionType() const
+{
+	return promotionType_;
 }
 
 void Move::setFrom(const Position &from)

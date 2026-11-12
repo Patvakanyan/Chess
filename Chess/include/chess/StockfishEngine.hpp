@@ -7,6 +7,7 @@
 #include <sys/wait.h>
 #include <fstream>
 #include <sstream>
+#include "Move.hpp"
 
 class StockfishEngine
 {
@@ -27,6 +28,6 @@ public:
 	void workWithChildProcess();
 	std::string sendCommand(const std::string &command, const std::string &target);
 
-	std::string getBestMove(const std::string &fen, int depth = 10);
+	Move getBestMove(const std::string &fen, int depth = 10);
 	~StockfishEngine();
 };

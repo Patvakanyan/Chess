@@ -92,7 +92,7 @@ void Game::undoMove()
 	result_ = ChessGameResult::Ongoing;
 }
 
-void Game::startGame()
+void Game::startGame(bool startEngine)
 {
 	gameOver_ = false;
 	result_ = ChessGameResult::Ongoing;
@@ -101,7 +101,8 @@ void Game::startGame()
 	state_ = GameState();
 	ChessFenUtils::FENToBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", board_, state_);
 	fen_ = ChessFenUtils::boardToFEN(board_, state_);
-	stockfishEngine_.startEngine();
+	if (startEngine)
+		stockfishEngine_.startEngine();
 }
 
 int Game::getHalfMoveClock() const

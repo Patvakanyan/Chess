@@ -21,6 +21,7 @@ private:
 	size_t capturedPieceHasMoved_;
 	Position capturedPosition_;
 	CustomMoveType customMoveType_ = CustomMoveType::NONE;
+	PieceType promotionType_ = PieceType::NONE;
 
 	size_t movingPieceHasMoved_;
 
@@ -34,12 +35,14 @@ private:
 
 public:
 	Move();
-	Move(const Position &from, const Position &to);
+	Move(const Position &from, const Position &to,
+		 PieceType promotionType = PieceType::NONE);
 
 	void makeMove(Board &board, const Move *lastMove = nullptr, PieceType promotionType = PieceType::NONE);
 
 	const Position &getFrom() const;
 	const Position &getTo() const;
+	PieceType getPromotionType() const;
 
 	void undoMove(Board &board) const;
 

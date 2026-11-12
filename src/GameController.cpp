@@ -35,13 +35,13 @@ namespace
 
 } // namespace
 
-GameController::GameController(ChessScene *scene, QObject *parent)
-	: QObject(parent), m_scene(scene)
+GameController::GameController(ChessScene *scene, QObject *parent, GameMode mode)
+	: QObject(parent), m_scene(scene), m_mode(mode)
 {
 	connect(m_scene, &ChessScene::squareClicked,
 			this, &GameController::onSquareClicked);
 
-	m_game.startGame(); // lays out the board; White moves first
+	m_game.startGame(m_mode == GameMode::VsStockfish); // White moves first
 	refreshView();
 }
 
@@ -76,7 +76,8 @@ void GameController::onSquareClicked(int row, int column)
 		return;
 	if (isGameFinished())
 		return;
-
+	if (m_engineThinking)
+		return;
 	const Position clicked(row, column);
 
 	if (m_selected)
@@ -98,6 +99,28 @@ void GameController::onSquareClicked(int row, int column)
 			clearSelection();
 			refreshView();
 			announceGameEndIfAny();
+			if (m_mode == GameMode::VsStockfish && !isGameFinished())
+			{
+				m_engineThinking = true;
+				QApplication::processEvents();
+				try
+				{
+					StockfishEngine &engine = m_game.getStockfishEngine();
+					const Move engineMove = engine.getBestMove(m_game.getFEN());
+					m_game.makeMove(engineMove.getFrom(), engineMove.getTo(),
+									engineMove.getPromotionType());
+					m_engineThinking = false;
+				}
+				catch (const std::exception &error)
+				{
+					m_engineThinking = false;
+					emit statusChanged(tr("Stockfish error: %1")
+										   .arg(QString::fromStdString(error.what())));
+					return;
+				}
+				refreshView();
+				announceGameEndIfAny();
+			}
 			return;
 		}
 		catch (const InvalidMoveException &)

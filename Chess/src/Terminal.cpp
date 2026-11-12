@@ -147,20 +147,10 @@ void Terminal::start()
 		{
 			try
 			{
-				std::string bestMove =
+				Move bestMove =
 					game_.getStockfishEngine().getBestMove(game_.getFEN(), 10);
-				if (bestMove.empty())
-				{
-					std::cerr << "Stockfish has no move (game over?)." << std::endl;
-					break;
-				}
-
-				Position from(bestMove.substr(0, 2));
-				Position to(bestMove.substr(2, 2));
-				PieceType promotionType = PieceType::NONE;
-				if (bestMove.size() == 5)
-					promotionType = ChessFenUtils::charToPieceType(bestMove[4]);
-				game_.makeMove(from, to, promotionType);
+				game_.makeMove(bestMove.getFrom(), bestMove.getTo(),
+							   bestMove.getPromotionType());
 			}
 			catch (const std::exception &e)
 			{
