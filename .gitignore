@@ -20,6 +20,7 @@ Chess/Chess_tests
 
 # Qt and IDE user files
 .qtcreator/
+qt.supp
 *.user
 *.user.*
 .idea/

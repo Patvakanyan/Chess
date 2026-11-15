@@ -41,8 +41,27 @@ GameController::GameController(ChessScene *scene, QObject *parent, GameMode mode
 	connect(m_scene, &ChessScene::squareClicked,
 			this, &GameController::onSquareClicked);
 
-	m_game.startGame(m_mode == GameMode::VsStockfish); // White moves first
+	QString engineError;
+	if (m_mode == GameMode::VsStockfish)
+	{
+		try
+		{
+			m_game.startGame(true); // White moves first
+		}
+		catch (const std::exception &error)
+		{
+			m_engineAvailable = false;
+			engineError = tr("Stockfish error: %1")
+							  .arg(QString::fromStdString(error.what()));
+		}
+	}
+	else
+	{
+		m_game.startGame(false);
+	}
 	refreshView();
+	if (!engineError.isEmpty())
+		emit statusChanged(engineError);
 }
 
 ChessScene::Board GameController::snapshot() const
@@ -71,66 +90,78 @@ std::vector<Position> GameController::legalMovesFrom(const Position &from)
 
 void GameController::onSquareClicked(int row, int column)
 {
-	if (row < 0 || row >= ChessScene::kBoardSize ||
-		column < 0 || column >= ChessScene::kBoardSize)
+	if (!isClickAllowed(row, column))
 		return;
-	if (isGameFinished())
-		return;
-	if (m_engineThinking)
-		return;
-	const Position clicked(row, column);
 
-	if (m_selected)
-	{
-		PieceType promotionType = PieceType::NONE;
-		const std::vector<Position> legal = legalMovesFrom(*m_selected);
-		const bool isLegal = std::find(legal.begin(), legal.end(), clicked) != legal.end();
-		if (isLegal && m_game.isPromotionMove(*m_selected, clicked))
-		{
-			const bool white = (m_game.getCurrentTurn() == Color::White);
-			PromotionDialog dlg(white, QApplication::activeWindow());
-			if (dlg.exec() != QDialog::Accepted)
-				return; // player closed the dialog: cancel the move
-			promotionType = dlg.selectedPiece();
-		}
-		try
-		{
-			m_game.makeMove(*m_selected, clicked, promotionType);
-			clearSelection();
-			refreshView();
-			announceGameEndIfAny();
-			if (m_mode == GameMode::VsStockfish && !isGameFinished())
-			{
-				m_engineThinking = true;
-				QApplication::processEvents();
-				try
-				{
-					StockfishEngine &engine = m_game.getStockfishEngine();
-					const Move engineMove = engine.getBestMove(m_game.getFEN());
-					m_game.makeMove(engineMove.getFrom(), engineMove.getTo(),
-									engineMove.getPromotionType());
-					m_engineThinking = false;
-				}
-				catch (const std::exception &error)
-				{
-					m_engineThinking = false;
-					emit statusChanged(tr("Stockfish error: %1")
-										   .arg(QString::fromStdString(error.what())));
-					return;
-				}
-				refreshView();
-				announceGameEndIfAny();
-			}
-			return;
-		}
-		catch (const InvalidMoveException &)
-		{
-			// Not a legal move for the selected piece -- fall through and
-			// treat this click as a fresh selection attempt instead.
-		}
-	}
+	const Position clicked(row, column);
+	if (m_selected && tryMoveSelected(clicked))
+		return;
 
 	trySelect(clicked);
+}
+
+bool GameController::isClickAllowed(int row, int column)
+{
+	return row >= 0 && row < ChessScene::kBoardSize &&
+		   column >= 0 && column < ChessScene::kBoardSize &&
+		   !isGameFinished() && !m_engineThinking;
+}
+
+bool GameController::tryMoveSelected(const Position &clicked)
+{
+	PieceType promotionType = PieceType::NONE;
+	const std::vector<Position> legal = legalMovesFrom(*m_selected);
+	const bool isLegal = std::find(legal.begin(), legal.end(), clicked) != legal.end();
+	if (isLegal && m_game.isPromotionMove(*m_selected, clicked))
+	{
+		const bool white = (m_game.getCurrentTurn() == Color::White);
+		PromotionDialog dlg(white, QApplication::activeWindow());
+		if (dlg.exec() != QDialog::Accepted)
+			return true;
+		promotionType = dlg.selectedPiece();
+	}
+
+	try
+	{
+		m_game.makeMove(*m_selected, clicked, promotionType);
+	}
+	catch (const InvalidMoveException &)
+	{
+		return false;
+	}
+
+	clearSelection();
+	refreshView();
+	announceGameEndIfAny();
+	playEngineMoveIfNeeded();
+	return true;
+}
+
+void GameController::playEngineMoveIfNeeded()
+{
+	if (m_mode != GameMode::VsStockfish || !m_engineAvailable || isGameFinished())
+		return;
+
+	m_engineThinking = true;
+	QApplication::processEvents();
+	try
+	{
+		StockfishEngine &engine = m_game.getStockfishEngine();
+		const Move engineMove = engine.getBestMove(m_game.getFEN());
+		m_game.makeMove(engineMove.getFrom(), engineMove.getTo(),
+						engineMove.getPromotionType());
+		m_engineThinking = false;
+	}
+	catch (const std::exception &error)
+	{
+		m_engineThinking = false;
+		emit statusChanged(tr("Stockfish error: %1")
+							   .arg(QString::fromStdString(error.what())));
+		return;
+	}
+
+	refreshView();
+	announceGameEndIfAny();
 }
 
 void GameController::trySelect(const Position &clicked)
@@ -152,7 +183,7 @@ void GameController::trySelect(const Position &clicked)
 	QVector<QPoint> castleTargets;
 	for (const Position &to : legalMovesFrom(clicked))
 	{
-		const QPoint target(to.getY(), to.getX()); // QPoint: x = column, y = row
+		const QPoint target(to.getY(), to.getX());
 		if (pieceType == PieceType::KING &&
 			std::abs(to.getY() - clicked.getY()) == 2)
 			castleTargets.push_back(target);

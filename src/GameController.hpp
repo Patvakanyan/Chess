@@ -22,7 +22,6 @@ public:
 	explicit GameController(ChessScene *scene, QObject *parent = nullptr, GameMode mode = GameMode::VsStockfish);
 
 signals:
-	// Human-readable status text: whose move it is, check, checkmate, etc.
 	void statusChanged(const QString &text);
 
 private slots:
@@ -31,8 +30,10 @@ private slots:
 private:
 	ChessScene::Board snapshot() const;
 
-
 	std::vector<Position> legalMovesFrom(const Position &from);
+	bool isClickAllowed(int row, int column);
+	bool tryMoveSelected(const Position &clicked);
+	void playEngineMoveIfNeeded();
 	void trySelect(const Position &clicked);
 	void refreshView();
 	void announceGameEndIfAny();
@@ -41,6 +42,7 @@ private:
 	QString statusText() const;
 
 	bool m_engineThinking = false;
+	bool m_engineAvailable = true;
 	Game m_game;
 	GameMode m_mode;
 	ChessScene *m_scene;
