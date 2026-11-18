@@ -6,6 +6,7 @@
 #include "chess/exceptions/InvalidMoveException.hpp"
 #include "chess/utils/ChessUtils.hpp"
 
+#include <QTimer>
 #include <algorithm>
 #include <QApplication>
 
@@ -139,29 +140,41 @@ bool GameController::tryMoveSelected(const Position &clicked)
 
 void GameController::playEngineMoveIfNeeded()
 {
-	if (m_mode != GameMode::VsStockfish || !m_engineAvailable || isGameFinished())
+	if (m_mode != GameMode::VsStockfish ||
+		!m_engineAvailable ||
+		m_engineThinking ||
+		isGameFinished())
 		return;
 
+	// Block board clicks during the delay and engine calculation.
 	m_engineThinking = true;
-	QApplication::processEvents();
-	try
-	{
-		StockfishEngine &engine = m_game.getStockfishEngine();
-		const Move engineMove = engine.getBestMove(m_game.getFEN());
-		m_game.makeMove(engineMove.getFrom(), engineMove.getTo(),
-						engineMove.getPromotionType());
-		m_engineThinking = false;
-	}
-	catch (const std::exception &error)
-	{
-		m_engineThinking = false;
-		emit statusChanged(tr("Stockfish error: %1")
-							   .arg(QString::fromStdString(error.what())));
-		return;
-	}
 
-	refreshView();
-	announceGameEndIfAny();
+	QTimer::singleShot(500, this, [this]()
+					   {
+		try
+		{
+			StockfishEngine &engine = m_game.getStockfishEngine();
+			const Move move = engine.getBestMove(m_game.getFEN());
+
+			m_game.makeMove(
+				move.getFrom(),
+				move.getTo(),
+				move.getPromotionType()
+			);
+		}
+		catch (const std::exception &error)
+		{
+			m_engineThinking = false;
+			emit statusChanged(
+				tr("Stockfish error: %1")
+					.arg(QString::fromStdString(error.what()))
+			);
+			return;
+		}
+
+		m_engineThinking = false;
+		refreshView();
+		announceGameEndIfAny(); });
 }
 
 void GameController::trySelect(const Position &clicked)

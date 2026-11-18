@@ -83,11 +83,8 @@ namespace ChessFenUtils
 			}
 		}
 
-		// Set the current turn based on the FEN string
 		state.turn = (turnPart == "w") ? Color::White : Color::Black;
 
-		// Set the half-move clock and full-move number in the move
-		// history based on the FEN string
 		int halfMoveClock = std::stoi(halfMoveClockPart);
 		int fullMoveNumber = std::stoi(fullMoveNumberPart);
 		state.halfMoveClock = halfMoveClock;
@@ -146,4 +143,4 @@ namespace ChessFenUtils
 		return fen;
 	}
 
-} // namespace ChessFenUtils
+}

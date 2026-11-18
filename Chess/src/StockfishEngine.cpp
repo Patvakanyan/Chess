@@ -85,6 +85,7 @@ Move StockfishEngine::getBestMove(const std::string &fen, int depth)
 	return Move(Position(move.substr(0, 2)), Position(move.substr(2, 2)),
 				promotionType);
 }
+
 int StockfishEngine::startEngine()
 {
 	if (processId_ > 0)
