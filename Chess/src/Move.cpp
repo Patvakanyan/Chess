@@ -158,6 +158,8 @@ void Move::executeMove(Board &board, Square *fromSquare, Square *toSquare,
 			ChessPieceFactory::createPromotedPiece(promotionType, color);
 		if (promotedPiece == nullptr)
 			throw InvalidMoveException("Invalid promotion piece.");
+		// Retain the pawn so a rejected promotion restores the original piece.
+		movingPiece = toSquare->releasePiece();
 		toSquare->setPiece(std::move(promotedPiece));
 	}
 
@@ -174,7 +176,8 @@ void Move::executeMove(Board &board, Square *fromSquare, Square *toSquare,
 			std::unique_ptr<Piece> rook = rookToSquare->releasePiece();
 			rookFromSquare->setPiece(std::move(rook));
 		}
-		movingPiece = toSquare->releasePiece();
+		if (movingPiece == nullptr)
+			movingPiece = toSquare->releasePiece();
 		fromSquare->setPiece(std::move(movingPiece));
 		captureSquare->setPiece(std::move(capturedPieceOwner));
 		throw InvalidMoveException("Move puts your king in check.");

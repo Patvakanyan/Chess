@@ -8,6 +8,7 @@
 #include <QVector>
 
 #include <array>
+#include <functional>
 #include <optional>
 
 class QGraphicsPathItem;
@@ -52,6 +53,12 @@ public:
 	// Places (or removes, with std::nullopt) a single piece.
 	void setPiece(int row, int column, std::optional<PieceView> piece);
 	std::optional<PieceView> pieceAt(int row, int column) const;
+
+	// Slides the existing graphics item to its destination, then calls finished.
+	// Captures, en passant, and the rook part of castling are handled here too.
+	void animateMove(int fromRow, int fromColumn,
+					 int toRow, int toColumn,
+					 std::function<void()> finished);
 
 	// Highlights a set of squares (e.g. legal move targets). x = column, y = row.
 	void highlightSquares(const QVector<QPoint> &squares,

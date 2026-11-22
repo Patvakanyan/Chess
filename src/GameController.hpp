@@ -42,6 +42,7 @@ private:
 	QString statusText() const;
 
 	bool m_engineThinking = false;
+	bool m_moveAnimating = false;
 	bool m_engineAvailable = true;
 	Game m_game;
 	GameMode m_mode;

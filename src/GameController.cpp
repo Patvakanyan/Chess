@@ -105,11 +105,12 @@ bool GameController::isClickAllowed(int row, int column)
 {
 	return row >= 0 && row < ChessScene::kBoardSize &&
 		   column >= 0 && column < ChessScene::kBoardSize &&
-		   !isGameFinished() && !m_engineThinking;
+		   !isGameFinished() && !m_engineThinking && !m_moveAnimating;
 }
 
 bool GameController::tryMoveSelected(const Position &clicked)
 {
+	const Position from = *m_selected;
 	PieceType promotionType = PieceType::NONE;
 	const std::vector<Position> legal = legalMovesFrom(*m_selected);
 	const bool isLegal = std::find(legal.begin(), legal.end(), clicked) != legal.end();
@@ -132,9 +133,16 @@ bool GameController::tryMoveSelected(const Position &clicked)
 	}
 
 	clearSelection();
-	refreshView();
-	announceGameEndIfAny();
-	playEngineMoveIfNeeded();
+	m_moveAnimating = true;
+	m_scene->animateMove(from.getX(), from.getY(),
+						 clicked.getX(), clicked.getY(),
+						 [this]()
+						 {
+							 m_moveAnimating = false;
+							 refreshView();
+							 announceGameEndIfAny();
+							 playEngineMoveIfNeeded();
+						 });
 	return true;
 }
 
@@ -161,6 +169,15 @@ void GameController::playEngineMoveIfNeeded()
 				move.getTo(),
 				move.getPromotionType()
 			);
+
+			m_scene->animateMove(move.getFrom().getX(), move.getFrom().getY(),
+								 move.getTo().getX(), move.getTo().getY(),
+								 [this]()
+								 {
+									 m_engineThinking = false;
+									 refreshView();
+									 announceGameEndIfAny();
+								 });
 		}
 		catch (const std::exception &error)
 		{
@@ -171,10 +188,7 @@ void GameController::playEngineMoveIfNeeded()
 			);
 			return;
 		}
-
-		m_engineThinking = false;
-		refreshView();
-		announceGameEndIfAny(); });
+	});
 }
 
 void GameController::trySelect(const Position &clicked)

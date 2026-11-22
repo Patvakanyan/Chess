@@ -1,6 +1,7 @@
 #include "ChessScene.hpp"
 
 #include <QColor>
+#include <QEasingCurve>
 #include <QFont>
 #include <QGraphicsEllipseItem>
 #include <QGraphicsPathItem>
@@ -9,6 +10,10 @@
 #include <QGuiApplication>
 #include <QPainter>
 #include <QPen>
+#include <QVariantAnimation>
+
+#include <cmath>
+#include <utility>
 
 namespace
 {
@@ -207,6 +212,116 @@ std::optional<PieceView> ChessScene::pieceAt(int row, int column) const
 	if (row < 0 || row >= kBoardSize || column < 0 || column >= kBoardSize)
 		return std::nullopt;
 	return m_board[row][column];
+}
+
+void ChessScene::animateMove(int fromRow, int fromColumn,
+							 int toRow, int toColumn,
+							 std::function<void()> finished)
+{
+	const auto insideBoard = [](int row, int column)
+	{
+		return row >= 0 && row < kBoardSize &&
+			   column >= 0 && column < kBoardSize;
+	};
+
+	if (!insideBoard(fromRow, fromColumn) ||
+		!insideBoard(toRow, toColumn) ||
+		!m_items[fromRow][fromColumn] ||
+		!m_board[fromRow][fromColumn])
+	{
+		if (finished)
+			finished();
+		return;
+	}
+
+	struct AnimatedItem
+	{
+		QGraphicsPathItem *item;
+		QPointF start;
+		QPointF end;
+	};
+
+	QVector<AnimatedItem> items;
+	const PieceView movingPiece = *m_board[fromRow][fromColumn];
+	const bool destinationWasEmpty = !m_board[toRow][toColumn].has_value();
+
+	// A captured piece should disappear when the moving piece starts moving.
+	removePieceItem(toRow, toColumn);
+	m_board[toRow][toColumn].reset();
+
+	// In en passant the captured pawn is beside the moving pawn, not on the
+	// destination square.
+	if (movingPiece.kind == PieceKind::Pawn &&
+		fromColumn != toColumn && destinationWasEmpty)
+	{
+		removePieceItem(fromRow, toColumn);
+		m_board[fromRow][toColumn].reset();
+	}
+
+	const auto queueItem = [this, &items](int sourceRow, int sourceColumn,
+										 int destinationRow, int destinationColumn)
+	{
+		QGraphicsPathItem *item = m_items[sourceRow][sourceColumn];
+		if (!item)
+			return;
+
+		items.push_back({item,
+						  item->pos(),
+						  item->pos() + squareCenter(destinationRow, destinationColumn) -
+							  squareCenter(sourceRow, sourceColumn)});
+
+		m_items[sourceRow][sourceColumn] = nullptr;
+		m_items[destinationRow][destinationColumn] = item;
+		m_board[destinationRow][destinationColumn] = m_board[sourceRow][sourceColumn];
+		m_board[sourceRow][sourceColumn].reset();
+	};
+
+	queueItem(fromRow, fromColumn, toRow, toColumn);
+
+	// Move the rook at the same time as the king during castling.
+	if (movingPiece.kind == PieceKind::King &&
+		std::abs(toColumn - fromColumn) == 2)
+	{
+		const bool kingSide = toColumn > fromColumn;
+		const int rookFromColumn = kingSide ? 7 : 0;
+		const int rookToColumn = kingSide ? toColumn - 1 : toColumn + 1;
+		queueItem(fromRow, rookFromColumn, toRow, rookToColumn);
+	}
+
+	if (items.isEmpty())
+	{
+		if (finished)
+			finished();
+		return;
+	}
+
+	auto *animation = new QVariantAnimation(this);
+	animation->setDuration(220);
+	animation->setStartValue(0.0);
+	animation->setEndValue(1.0);
+	animation->setEasingCurve(QEasingCurve::OutCubic);
+
+	connect(animation, &QVariantAnimation::valueChanged,
+			this, [items](const QVariant &value)
+			{
+				const qreal progress = value.toReal();
+				for (const AnimatedItem &entry : items)
+					entry.item->setPos(entry.start +
+									   (entry.end - entry.start) * progress);
+			});
+
+	connect(animation, &QVariantAnimation::finished,
+			this, [animation, items, finished = std::move(finished)]()
+			{
+				for (const AnimatedItem &entry : items)
+					entry.item->setPos(entry.end);
+
+				if (finished)
+					finished();
+				animation->deleteLater();
+			});
+
+	animation->start();
 }
 
 void ChessScene::showPosition(const Board &board)

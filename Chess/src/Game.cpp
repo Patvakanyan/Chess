@@ -135,6 +135,8 @@ void Game::makeMove(const Position &from, const Position &to, PieceType promotio
 		if (!allowed)
 			throw InvalidMoveException("Castling rights have been lost.");
 	}
+	// Promotion replaces the pawn, so do not use its pointer after makeMove.
+	const Color movingColor = pieceToMove->getColor();
 	Move move(from, to);
 	try
 	{
@@ -152,7 +154,7 @@ void Game::makeMove(const Position &from, const Position &to, PieceType promotio
 		throw InvalidPositionException("Invalid position: " + std::string(e.what()));
 	}
 	state_.turn = oppositeColor(state_.turn);
-	updateCastlingRights(state_, move, pieceToMove->getColor());
+	updateCastlingRights(state_, move, movingColor);
 	moveHistory_.push_back(move);
 	state_.enPassantTarget.reset();
 	if (move.getPieceType() == PieceType::PAWN &&

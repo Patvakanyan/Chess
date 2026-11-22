@@ -1,6 +1,7 @@
 #include "chess/utils/ChessUtils.hpp"
 #include "chess/Game.hpp"
 #include <vector>
+#include <algorithm>
 
 namespace
 {
@@ -172,6 +173,116 @@ namespace
 		return false;
 	}
 
+	const std::vector<PieceType> promotionChoices = {
+		PieceType::QUEEN, PieceType::ROOK, PieceType::BISHOP, PieceType::KNIGHT};
+
+	bool rejectedPromotionsPreservePosition()
+	{
+		for (Color color : {Color::White, Color::Black})
+		{
+			for (const std::string target : {"a", "b"})
+			{
+				for (PieceType choice : promotionChoices)
+				{
+					Game game;
+					game.FENToBoard(color == Color::White
+						? "1r2k3/P7/8/8/8/8/2n5/4K3 w - - 7 12"
+						: "4k3/2N5/8/8/8/8/p7/1R2K3 b - - 7 12");
+					const Position from(color == Color::White ? "a7" : "a2");
+					const Position to(target + (color == Color::White ? "8" : "1"));
+					const std::string before = ChessFenUtils::boardToFEN(game.getBoard(), GameState());
+					const std::string fen = game.getFEN();
+					const Piece *pawn = game.getBoard()[from.getX()][from.getY()].getPiece();
+					bool rejected = false;
+					try
+					{
+						game.makeMove(from, to, choice);
+					}
+					catch (const InvalidMoveException &)
+					{
+						rejected = true;
+					}
+					if (!rejected ||
+						ChessFenUtils::boardToFEN(game.getBoard(), GameState()) != before ||
+						game.getBoard()[from.getX()][from.getY()].getPiece() != pawn ||
+						game.getFEN() != fen || game.getCurrentTurn() != color ||
+						game.getHalfMoveClock() != 7 || game.getLastMove() != nullptr ||
+						game.getResult() != ChessGameResult::Ongoing || game.isGameOver())
+						return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	bool promotionQueriesPreservePosition()
+	{
+		for (Color color : {Color::White, Color::Black})
+		{
+			Game game;
+			game.FENToBoard(color == Color::White
+				? "1r2k3/P7/8/8/8/8/2n5/4K3 w - - 7 12"
+				: "4k3/2N5/8/8/8/8/p7/1R2K3 b - - 7 12");
+			const Position from(color == Color::White ? "a7" : "a2");
+			const std::string before = ChessFenUtils::boardToFEN(game.getBoard(), GameState());
+			for (int attempt = 0; attempt < 2; ++attempt)
+			{
+				if (!game.legalMovesFrom(from).empty() ||
+					ChessFenUtils::boardToFEN(game.getBoard(), GameState()) != before)
+					return false;
+			}
+			if (ChessGameRules::isCheckmate(game.getBoard(), color) ||
+				ChessFenUtils::boardToFEN(game.getBoard(), GameState()) != before)
+				return false;
+		}
+		return true;
+	}
+
+	bool givingCheckDoesNotPromoteOpponentPawn()
+	{
+		Game game;
+		game.FENToBoard("1rbqkbnr/Pp2pppp/3P4/8/3n4/8/P2Q1PPP/RNB1KBNR b - - 0 9");
+		game.makeMove(Position("d4"), Position("c2"));
+		const Piece *pawn = game.getBoard()[1][0].getPiece();
+		return pawn != nullptr && pawn->getType() == PieceType::PAWN &&
+			   pawn->getColor() == Color::White &&
+			   game.getCurrentTurn() == Color::White &&
+			   ChessAttackUtils::isInCheck(game.getBoard(), Color::White) &&
+			   game.legalMovesFrom(Position("a7")).empty() &&
+			   game.getFEN() == "1rbqkbnr/Pp2pppp/3P4/8/8/8/P1nQ1PPP/RNB1KBNR w - - 1 9";
+	}
+
+	bool legalPromotionsWork(const std::string &fen, const Position &from,
+							 const Position &to, bool startsInCheck)
+	{
+		for (PieceType choice : promotionChoices)
+		{
+			Game game;
+			game.FENToBoard(fen);
+			const Color color = game.getCurrentTurn();
+			const std::string before = ChessFenUtils::boardToFEN(game.getBoard(), GameState());
+			if (ChessAttackUtils::isInCheck(game.getBoard(), color) != startsInCheck)
+				return false;
+			const std::vector<Position> legal = game.legalMovesFrom(from);
+			if (std::find(legal.begin(), legal.end(), to) == legal.end() ||
+				ChessFenUtils::boardToFEN(game.getBoard(), GameState()) != before)
+				return false;
+			game.makeMove(from, to, choice);
+			const Piece *promoted = game.getBoard()[to.getX()][to.getY()].getPiece();
+			if (promoted == nullptr || promoted->getType() != choice ||
+				promoted->getColor() != color ||
+				!game.getBoard()[from.getX()][from.getY()].isEmpty() ||
+				ChessAttackUtils::isInCheck(game.getBoard(), color) ||
+				game.getCurrentTurn() != oppositeColor(color))
+				return false;
+			game.undoMove();
+			if (ChessFenUtils::boardToFEN(game.getBoard(), GameState()) != before ||
+				game.getCurrentTurn() != color)
+				return false;
+		}
+		return true;
+	}
+
 	bool runTest(const std::string &name, bool result)
 	{
 		std::cout << (result ? "PASS: " : "FAIL: ") << name << '\n';
@@ -226,6 +337,25 @@ int main()
 						 aNewGameClearsMoveHistory());
 	allPassed &= runTest("loading a FEN clears move history",
 						 loadingFenClearsMoveHistory());
+
+	allPassed &= runTest("rejected promotions preserve the pawn, captures, and game state",
+						 rejectedPromotionsPreservePosition());
+	allPassed &= runTest("legal-move and checkmate queries never promote a checked pawn",
+						 promotionQueriesPreservePosition());
+	allPassed &= runTest("the screenshot knight check leaves the a7 pawn unchanged",
+						 givingCheckDoesNotPromoteOpponentPawn());
+	allPassed &= runTest("white can promote by capturing the checking rook",
+		legalPromotionsWork("1r2K3/P7/7k/8/8/8/8/8 w - - 0 1", Position("a7"), Position("b8"), true));
+	allPassed &= runTest("black can promote by capturing the checking rook",
+		legalPromotionsWork("8/8/8/8/8/7K/p7/1R2k3 b - - 0 1", Position("a2"), Position("b1"), true));
+	allPassed &= runTest("white can promote by blocking check",
+		legalPromotionsWork("K6r/3P4/7k/8/8/8/8/8 w - - 0 1", Position("d7"), Position("d8"), true));
+	allPassed &= runTest("black can promote by blocking check",
+		legalPromotionsWork("8/8/8/8/8/7K/3p4/k6R b - - 0 1", Position("d2"), Position("d1"), true));
+	allPassed &= runTest("ordinary white promotions still work",
+		legalPromotionsWork("4k3/P7/8/8/8/8/8/4K3 w - - 0 1", Position("a7"), Position("a8"), false));
+	allPassed &= runTest("ordinary black promotions still work",
+		legalPromotionsWork("4k3/8/8/8/8/8/p7/4K3 b - - 0 1", Position("a2"), Position("a1"), false));
 
 	return allPassed ? 0 : 1;
 }
