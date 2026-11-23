@@ -42,12 +42,11 @@ public:
 
 	using Board = std::array<std::array<std::optional<PieceView>, kBoardSize>, kBoardSize>;
 
-	explicit ChessScene(QObject *parent = nullptr);
+	explicit ChessScene(QObject *parent = nullptr, bool blackAtBottom = false);
 	~ChessScene() override;
 
-	// Redraws every piece to match the given position. row 0 is rank 8,
-	// column 0 is the a-file -- the same convention the chess engine uses,
-	// so board rows/columns can be passed straight through with no flipping.
+	// Board coordinates always match the engine: row 0 is rank 8 and column 0
+	// is the a-file. Display orientation does not change these coordinates.
 	void showPosition(const Board &board);
 
 	// Places (or removes, with std::nullopt) a single piece.
@@ -65,7 +64,7 @@ public:
 						  const QVector<QPoint> &castleSquares = {});
 	void clearHighlights();
 	static QPixmap pieceIcon(PieceKind kind, bool white, int size);
-	// The single place that maps a board square to scene coordinates.
+	// Center of a square in the displayed grid, with row 0 at the top.
 	static QPointF squareCenter(int row, int column);
 
 signals:
@@ -89,11 +88,13 @@ private:
 
 	void drawBoardSquares();
 	void drawCoordinates();
+	QPointF displayedSquareCenter(int row, int column) const;
 	void clearPieces();
 	void removePieceItem(int row, int column);
 	QGraphicsPathItem *createPieceItem(const PieceView &piece, int row, int column);
 	const QPainterPath &glyphPath(PieceKind kind);
 
+	bool m_blackAtBottom;
 	Board m_board{};
 	ItemGrid m_items{};
 	QHash<int, QPainterPath> m_glyphCache;

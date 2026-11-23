@@ -19,7 +19,7 @@ For the engine-specific design and terminal usage, see the
 
 - CMake 3.16 or newer
 - A C++17-compatible compiler
-- Qt 6.10 or newer
+- Qt 6.10 or newer, including the Widgets and Multimedia modules
 - GNU Make (required only when CMake needs to build the bundled Stockfish
   fallback)
 - A Stockfish executable on `PATH` is optional. If it is not found, CMake
@@ -31,12 +31,18 @@ When the GUI starts, choose one of the following modes:
 
 - **Two Players** - two people play locally on the same board. Stockfish is
   not started in this mode.
-- **Play vs Stockfish** - the human player controls White and Stockfish plays
-  Black. The engine move is calculated after each legal White move.
+- **Play vs Stockfish** - choose White or Black in Settings. Stockfish plays
+  the opposite color and moves first when you choose Black. The engine move
+  is calculated after each legal human move. Your chosen color is displayed
+  at the bottom of the board.
 
 The GUI reports Stockfish startup and move errors in the game status area.
 If Stockfish is already installed, CMake uses the executable found through
 `PATH`; otherwise the first build downloads and builds it automatically.
+
+Move sounds use the bundled `sound/castle.wav`, a PCM copy of the original
+`sound/castle.mp3`, with Qt's sound-effects player. Enable or disable move
+sounds from Settings before starting a game.
 
 ## Build the GUI
 

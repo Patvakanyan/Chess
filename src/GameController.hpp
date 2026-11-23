@@ -14,12 +14,16 @@
 #include "ChessScene.hpp"
 #include "GameMode.hpp"
 
+class QSoundEffect;
+
 class GameController : public QObject
 {
 	Q_OBJECT
 
 public:
-	explicit GameController(ChessScene *scene, QObject *parent = nullptr, GameMode mode = GameMode::VsStockfish);
+	explicit GameController(ChessScene *scene, QObject *parent = nullptr,
+		GameMode mode = GameMode::VsStockfish, int stockfishDepth = 10,
+		bool soundEnabled = true, Color playerColor = Color::White);
 
 signals:
 	void statusChanged(const QString &text);
@@ -34,6 +38,7 @@ private:
 	bool isClickAllowed(int row, int column);
 	bool tryMoveSelected(const Position &clicked);
 	void playEngineMoveIfNeeded();
+	void playMoveSound() const;
 	void trySelect(const Position &clicked);
 	void refreshView();
 	void announceGameEndIfAny();
@@ -46,6 +51,10 @@ private:
 	bool m_engineAvailable = true;
 	Game m_game;
 	GameMode m_mode;
+	Color m_playerColor;
+	int m_stockfishDepth;
+	bool m_soundEnabled;
+	QSoundEffect *m_moveSound = nullptr;
 	ChessScene *m_scene;
 	std::optional<Position> m_selected;
 };

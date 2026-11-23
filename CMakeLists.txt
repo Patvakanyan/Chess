@@ -2,15 +2,19 @@ cmake_minimum_required(VERSION 3.16)
 
 project(chessGui_2 VERSION 0.1 LANGUAGES CXX)
 
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+include(GNUInstallDirs)
 
 enable_testing()
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Multimedia)
 
 qt_standard_project_setup(REQUIRES 6.10)
 
 add_subdirectory(Chess)
+add_subdirectory(server)
 
 if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/importedcontent/CMakeLists.txt")
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/importedcontent)
@@ -19,6 +23,7 @@ endif()
 qt_add_executable(appchessGui_2
     main.cpp
     src/ChessScene.cpp
+    src/ChessScene.hpp
     src/ChessView.cpp
     src/PromotionDialog.hpp
     src/PromotionDialog.cpp
@@ -30,6 +35,13 @@ qt_add_executable(appchessGui_2
     src/GameMode.hpp
     src/StartPage.cpp
     src/StartPage.hpp
+    src/SettingsPage.cpp
+    src/SettingsPage.hpp
+)
+
+qt_add_resources(appchessGui_2 move_sounds
+    PREFIX "/"
+    FILES sound/castle.wav
 )
 
 set_target_properties(appchessGui_2 PROPERTIES
@@ -42,6 +54,7 @@ set_target_properties(appchessGui_2 PROPERTIES
 target_link_libraries(appchessGui_2
     PRIVATE
         Qt6::Widgets
+        Qt6::Multimedia
         ChessCore
 )
 

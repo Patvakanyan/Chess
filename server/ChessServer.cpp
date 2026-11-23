@@ -10,11 +10,11 @@
 #include <unistd.h>
 
 ChessServer::ChessServer(uint16_t serverPort)
-	: serverAddress{}, port(serverPort), serverSocket(-1), whiteSocket(-1), blackSocket(-1)
+    : serverAddress{}, port(serverPort), serverSocket(-1), whiteSocket(-1), blackSocket(-1)
 {
 	serverAddress.sin_family = AF_INET;
-	serverAddress.sin_port = htons(port);
-	serverAddress.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+	serverAddress.sin_port = ::htons(port);
+	serverAddress.sin_addr.s_addr = ::htonl(INADDR_LOOPBACK);
 }
 
 void ChessServer::startServer()
@@ -27,7 +27,7 @@ void ChessServer::startServer()
 
 void ChessServer::setupServer()
 {
-	serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	serverSocket = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 	if (serverSocket < 0)
 	{
@@ -36,12 +36,13 @@ void ChessServer::setupServer()
 
 	int reuseAddress = 1;
 
-	if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &reuseAddress, sizeof(reuseAddress)) < 0)
+	if (::setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &reuseAddress, sizeof(reuseAddress)) <
+	    0)
 		throw std::system_error(errno, std::generic_category(), "Failed to set SO_REUSEADDR");
-	if (bind(serverSocket, reinterpret_cast<const sockaddr *>(&serverAddress),
-			 sizeof(serverAddress)) < 0)
+	if (::bind(serverSocket, reinterpret_cast<const sockaddr *>(&serverAddress),
+	        sizeof(serverAddress)) < 0)
 		throw std::system_error(errno, std::generic_category(), "Failed to bind server socket");
-	if (listen(serverSocket, 2) < 0)
+	if (::listen(serverSocket, 2) < 0)
 		throw std::system_error(errno, std::generic_category(), "Failed to listen");
 
 	std::cout << "Server listening on 127.0.0.1:" << port << '\n';
@@ -49,7 +50,7 @@ void ChessServer::setupServer()
 
 void ChessServer::waitForClients()
 {
-	whiteSocket = accept(serverSocket, nullptr, nullptr);
+	whiteSocket = ::accept(serverSocket, nullptr, nullptr);
 
 	if (whiteSocket < 0)
 		throw std::system_error(errno, std::generic_category(), "Failed to accept White");
@@ -58,7 +59,7 @@ void ChessServer::waitForClients()
 
 	sendMessage(whiteSocket, waitingMessage, sizeof(waitingMessage) - 1);
 
-	blackSocket = accept(serverSocket, nullptr, nullptr);
+	blackSocket = ::accept(serverSocket, nullptr, nullptr);
 
 	if (blackSocket < 0)
 		throw std::system_error(errno, std::generic_category(), "Failed to accept Black");
@@ -110,7 +111,7 @@ ssize_t ChessServer::receiveLine(int clientSocket, char *buffer, size_t bufferSi
 	{
 		char character = '\0';
 
-		ssize_t bytesRead = recv(clientSocket, &character, 1, 0);
+		ssize_t bytesRead = ::recv(clientSocket, &character, 1, 0);
 
 		if (bytesRead < 0)
 		{
@@ -152,7 +153,7 @@ ssize_t ChessServer::sendMessage(int clientSocket, const char *message, size_t m
 	while (totalSent < messageSize)
 	{
 		ssize_t bytesSent =
-			send(clientSocket, message + totalSent, messageSize - totalSent, MSG_NOSIGNAL);
+		    ::send(clientSocket, message + totalSent, messageSize - totalSent, MSG_NOSIGNAL);
 
 		if (bytesSent < 0)
 		{
@@ -167,22 +168,22 @@ ssize_t ChessServer::sendMessage(int clientSocket, const char *message, size_t m
 	return static_cast<ssize_t>(totalSent);
 }
 
-void ChessServer::stopServer()
+void ChessServer::stopServer() noexcept
 {
 	if (whiteSocket >= 0)
 	{
-		close(whiteSocket);
+		::close(whiteSocket);
 		whiteSocket = -1;
 	}
 	if (blackSocket >= 0)
 	{
-		close(blackSocket);
+		::close(blackSocket);
 		blackSocket = -1;
 	}
 
 	if (serverSocket >= 0)
 	{
-		close(serverSocket);
+		::close(serverSocket);
 		serverSocket = -1;
 	}
 }

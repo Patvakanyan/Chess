@@ -3,6 +3,7 @@
 #include "chess/exceptions/InvalidPositionException.hpp"
 #include "chess/utils/ChessUtils.hpp"
 #include <cctype>
+#include <cstdlib>
 
 Terminal::Terminal(Game &game) : game_(game) {}
 
@@ -128,9 +129,9 @@ void Terminal::printBoard() const
 void Terminal::clearScreen()
 {
 #ifdef _WIN32
-	system("cls");
+	::system("cls");
 #else
-	system("clear");
+	::system("clear");
 #endif
 }
 void Terminal::start()

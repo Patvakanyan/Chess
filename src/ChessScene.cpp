@@ -84,8 +84,8 @@ namespace
 	}
 } // namespace
 
-ChessScene::ChessScene(QObject *parent)
-	: QGraphicsScene(parent)
+ChessScene::ChessScene(QObject *parent, bool blackAtBottom)
+	: QGraphicsScene(parent), m_blackAtBottom(blackAtBottom)
 {
 	setSceneRect(0, 0, kBoardPixels, kBoardPixels);
 	setBackgroundBrush(kSceneBackground);
@@ -97,6 +97,16 @@ QPointF ChessScene::squareCenter(int row, int column)
 {
 	return QPointF(column * kSquareSize + kSquareSize / 2.0,
 				   row * kSquareSize + kSquareSize / 2.0);
+}
+
+QPointF ChessScene::displayedSquareCenter(int row, int column) const
+{
+	if (m_blackAtBottom)
+	{
+		row = kBoardSize - 1 - row;
+		column = kBoardSize - 1 - column;
+	}
+	return squareCenter(row, column);
 }
 
 void ChessScene::drawBoardSquares()
@@ -124,14 +134,16 @@ void ChessScene::drawCoordinates()
 	for (int index = 0; index < kBoardSize; ++index)
 	{
 		// File letters: bottom-right corner of the bottom row.
-		auto *file = addSimpleText(QString(QLatin1Char(kFiles[index])));
+		const int fileIndex = m_blackAtBottom ? kBoardSize - 1 - index : index;
+		auto *file = addSimpleText(QString(QLatin1Char(kFiles[fileIndex])));
 		file->setFont(font);
 		file->setPos(index * kSquareSize + kSquareSize - 14, kBoardPixels - 20);
 		file->setBrush(coordinateColor(kBoardSize - 1, index));
 		file->setZValue(ZLabel);
 
 		// Rank numbers: top-left corner of the left column.
-		auto *rank = addSimpleText(QString::number(kBoardSize - index));
+		const int rankNumber = m_blackAtBottom ? index + 1 : kBoardSize - index;
+		auto *rank = addSimpleText(QString::number(rankNumber));
 		rank->setFont(font);
 		rank->setPos(4, index * kSquareSize + 2);
 		rank->setBrush(coordinateColor(index, 0));
@@ -169,7 +181,7 @@ QGraphicsPathItem *ChessScene::createPieceItem(const PieceView &piece, int row, 
 							 kSquareSize * kPieceWidthRatio / bounds.width());
 	item->setTransformOriginPoint(bounds.center());
 	item->setScale(scale);
-	item->setPos(squareCenter(row, column) - bounds.center());
+	item->setPos(displayedSquareCenter(row, column) - bounds.center());
 	return item;
 }
 
@@ -267,8 +279,8 @@ void ChessScene::animateMove(int fromRow, int fromColumn,
 
 		items.push_back({item,
 						  item->pos(),
-						  item->pos() + squareCenter(destinationRow, destinationColumn) -
-							  squareCenter(sourceRow, sourceColumn)});
+						  item->pos() + displayedSquareCenter(destinationRow, destinationColumn) -
+							  displayedSquareCenter(sourceRow, sourceColumn)});
 
 		m_items[sourceRow][sourceColumn] = nullptr;
 		m_items[destinationRow][destinationColumn] = item;
@@ -366,7 +378,9 @@ void ChessScene::highlightSquares(const QVector<QPoint> &squares,
 			return;
 
 		const qreal margin = kSquareSize * 0.14;
-		auto *dot = addEllipse(column * kSquareSize + margin, row * kSquareSize + margin,
+		const QPointF center = displayedSquareCenter(row, column);
+		auto *dot = addEllipse(center.x() - kSquareSize / 2.0 + margin,
+							   center.y() - kSquareSize / 2.0 + margin,
 							   kSquareSize - 2 * margin, kSquareSize - 2 * margin);
 		dot->setBrush(color);
 		dot->setPen(Qt::NoPen);
@@ -395,10 +409,14 @@ void ChessScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	if (event->button() == Qt::LeftButton)
 	{
 		const QPointF p = event->scenePos();
-		const int column = static_cast<int>(p.x()) / kSquareSize;
-		const int row = static_cast<int>(p.y()) / kSquareSize;
+		const int column = static_cast<int>(std::floor(p.x() / kSquareSize));
+		const int row = static_cast<int>(std::floor(p.y() / kSquareSize));
 		if (row >= 0 && row < kBoardSize && column >= 0 && column < kBoardSize)
-			emit squareClicked(row, column);
+		{
+			const int boardRow = m_blackAtBottom ? kBoardSize - 1 - row : row;
+			const int boardColumn = m_blackAtBottom ? kBoardSize - 1 - column : column;
+			emit squareClicked(boardRow, boardColumn);
+		}
 	}
 	QGraphicsScene::mousePressEvent(event);
 }

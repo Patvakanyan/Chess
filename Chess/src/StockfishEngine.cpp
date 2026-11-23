@@ -1,13 +1,18 @@
 #include "../include/chess/StockfishEngine.hpp"
 #include "chess/utils/ChessUtils.hpp"
 
+#include <cerrno>
+#include <cstdio>
+
 StockfishEngine::StockfishEngine() : processId_(-1)
 {
-	if (pipe(pipeToStockfish_) == -1)
+	if (::pipe(pipeToStockfish_) == -1)
 		throw std::runtime_error("Failed to create pipes for Stockfish engine.");
-	if (pipe(pipeFromStockfish_) == -1)
+	if (::pipe(pipeFromStockfish_) == -1)
 	{
+		const int errorCode = errno;
 		closePipe(pipeToStockfish_);
+		errno = errorCode;
 		throw std::runtime_error("Failed to create pipes for Stockfish engine.");
 	}
 }
@@ -19,7 +24,7 @@ void StockfishEngine::closePipe(int pipe[2]) noexcept
 		int &descriptor = pipe[index];
 		if (descriptor != -1)
 		{
-			close(descriptor);
+			::close(descriptor);
 			descriptor = -1;
 		}
 	}
@@ -27,19 +32,19 @@ void StockfishEngine::closePipe(int pipe[2]) noexcept
 
 void StockfishEngine::workWithChildProcess()
 {
-	close(pipeToStockfish_[1]);
-	close(pipeFromStockfish_[0]);
-	if (dup2(pipeToStockfish_[0], STDIN_FILENO) == -1 || dup2(pipeFromStockfish_[1], STDOUT_FILENO) == -1)
+	::close(pipeToStockfish_[1]);
+	::close(pipeFromStockfish_[0]);
+	if (::dup2(pipeToStockfish_[0], STDIN_FILENO) == -1 || ::dup2(pipeFromStockfish_[1], STDOUT_FILENO) == -1)
 	{
 		std::cerr << "Failed to redirect pipes for Stockfish engine." << std::endl;
-		_exit(EXIT_FAILURE);
+		::_exit(EXIT_FAILURE);
 	}
-	close(pipeToStockfish_[0]);
-	close(pipeFromStockfish_[1]);
+	::close(pipeToStockfish_[0]);
+	::close(pipeFromStockfish_[1]);
 	char *const args[] = {const_cast<char *>(stockfishPath_), nullptr};
-	execvp(stockfishPath_, args);
-	perror("Failed to execute Stockfish engine");
-	_exit(EXIT_FAILURE);
+	::execvp(stockfishPath_, args);
+	::perror("Failed to execute Stockfish engine");
+	::_exit(EXIT_FAILURE);
 }
 
 std::string StockfishEngine::sendCommand(const std::string &command, const std::string &target)
@@ -48,7 +53,7 @@ std::string StockfishEngine::sendCommand(const std::string &command, const std::
 		throw std::runtime_error("Stockfish is not running.");
 
 	const std::string line = command + "\n";
-	if (write(pipeToStockfish_[1], line.c_str(), line.size()) != static_cast<ssize_t>(line.size()))
+	if (::write(pipeToStockfish_[1], line.c_str(), line.size()) != static_cast<ssize_t>(line.size()))
 		throw std::runtime_error("Failed to write to Stockfish.");
 
 	if (target.empty())
@@ -61,7 +66,7 @@ std::string StockfishEngine::sendCommand(const std::string &command, const std::
 		size_t pos = response.find(target);
 		if (pos != std::string::npos && response.find('\n', pos) != std::string::npos)
 			return response;
-		ssize_t n = read(pipeFromStockfish_[0], buffer, sizeof(buffer));
+		ssize_t n = ::read(pipeFromStockfish_[0], buffer, sizeof(buffer));
 		if (n <= 0)
 			throw std::runtime_error("Stockfish closed unexpectedly.");
 		response.append(buffer, n);
@@ -94,32 +99,36 @@ int StockfishEngine::startEngine()
 	if (pipeToStockfish_[0] == -1 || pipeToStockfish_[1] == -1)
 	{
 		closePipe(pipeToStockfish_);
-		if (pipe(pipeToStockfish_) == -1)
+		if (::pipe(pipeToStockfish_) == -1)
 			throw std::runtime_error("Failed to create pipes for Stockfish engine.");
 	}
 	if (pipeFromStockfish_[0] == -1 || pipeFromStockfish_[1] == -1)
 	{
 		closePipe(pipeFromStockfish_);
-		if (pipe(pipeFromStockfish_) == -1)
+		if (::pipe(pipeFromStockfish_) == -1)
 		{
+			const int errorCode = errno;
 			closePipe(pipeToStockfish_);
+			errno = errorCode;
 			throw std::runtime_error("Failed to create pipes for Stockfish engine.");
 		}
 	}
 
-	processId_ = fork();
+	processId_ = ::fork();
 	if (processId_ < 0)
 	{
+		const int errorCode = errno;
 		closePipe(pipeToStockfish_);
 		closePipe(pipeFromStockfish_);
+		errno = errorCode;
 		throw std::runtime_error("Failed to fork process for Stockfish engine.");
 	}
 	if (processId_ == 0)
 		workWithChildProcess();
 	else
 	{
-		close(pipeToStockfish_[0]);
-		close(pipeFromStockfish_[1]);
+		::close(pipeToStockfish_[0]);
+		::close(pipeFromStockfish_[1]);
 		pipeToStockfish_[0] = -1;
 		pipeFromStockfish_[1] = -1;
 		sendCommand("uci", "uciok");
@@ -135,10 +144,10 @@ int StockfishEngine::stopEngine()
 
 	int status;
 	const char command[] = "quit\n";
-	write(pipeToStockfish_[1], command, sizeof(command) - 1);
+	::write(pipeToStockfish_[1], command, sizeof(command) - 1);
 	closePipe(pipeToStockfish_);
 	closePipe(pipeFromStockfish_);
-	waitpid(processId_, &status, 0);
+	::waitpid(processId_, &status, 0);
 	processId_ = -1;
 	return WIFEXITED(status) ? WEXITSTATUS(status) : -1;
 }

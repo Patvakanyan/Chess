@@ -23,7 +23,6 @@ namespace
 	}
 } // namespace
 
-
 StartPage::StartPage(QWidget *parent)
 	: QWidget(parent)
 {
@@ -40,12 +39,16 @@ StartPage::StartPage(QWidget *parent)
 	QPushButton *twoPlayers = createModeButton(
 		tr("2 Players"), tr("Play against a friend on this computer"));
 	QPushButton *vsStockfish = createModeButton(
-		tr("Play vs Stockfish"), tr("You are White, the computer plays Black"));
+		tr("Play vs Stockfish"), tr("Choose your color in Settings"));
+	QPushButton *settings = createModeButton(
+		tr("Settings"), tr("Color, engine strength and move sounds"));
 
 	connect(twoPlayers, &QPushButton::clicked, this,
 			[this]() { emit modeSelected(GameMode::TwoPlayers); });
 	connect(vsStockfish, &QPushButton::clicked, this,
 			[this]() { emit modeSelected(GameMode::VsStockfish); });
+	connect(settings, &QPushButton::clicked,
+			this, &StartPage::settingsRequested);
 
 	auto *layout = new QVBoxLayout(this);
 	layout->setSpacing(16);
@@ -55,6 +58,7 @@ StartPage::StartPage(QWidget *parent)
 	layout->addSpacing(24);
 	layout->addWidget(twoPlayers, 0, Qt::AlignHCenter);
 	layout->addWidget(vsStockfish, 0, Qt::AlignHCenter);
+	layout->addWidget(settings, 0, Qt::AlignHCenter);
 	layout->addStretch(3);
 }
 

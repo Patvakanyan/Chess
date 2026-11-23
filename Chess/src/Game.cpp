@@ -172,8 +172,6 @@ void Game::makeMove(const Position &from, const Position &to, PieceType promotio
 							   : state_.halfMoveClock + 1;
 	fen_ = ChessFenUtils::boardToFEN(board_, state_);
 	const Move *lastMove = &moveHistory_.back();
-	printFEN(std::cout);
-	printMoves(std::cout);
 	if (ChessGameRules::isCheckmate(board_, state_.turn, lastMove))
 		result_ = ChessGameResult::Checkmate;
 	else if (ChessGameRules::isStalemate(board_, state_.turn, lastMove))

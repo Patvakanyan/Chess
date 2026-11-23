@@ -6,14 +6,16 @@
 #include "chess/exceptions/InvalidMoveException.hpp"
 #include "chess/utils/ChessUtils.hpp"
 
-#include <QTimer>
-#include <algorithm>
 #include <QApplication>
+#include <QSoundEffect>
+#include <QTimer>
+#include <QUrl>
+
+#include <algorithm>
 
 namespace
 {
-	// Engine rows/columns already match the GUI's: row 0 is rank 8 (top, black
-	// side), column 0 is the a-file (left), same as ChessScene. No flipping.
+	// Snapshots use engine coordinates; ChessScene handles display orientation.
 	PieceKind toKind(PieceType type)
 	{
 		switch (type)
@@ -36,11 +38,23 @@ namespace
 
 } // namespace
 
-GameController::GameController(ChessScene *scene, QObject *parent, GameMode mode)
-	: QObject(parent), m_scene(scene), m_mode(mode)
+GameController::GameController(ChessScene *scene, QObject *parent, GameMode mode,
+	int stockfishDepth, bool soundEnabled, Color playerColor)
+	: QObject(parent),
+	  m_mode(mode),
+	  m_playerColor(playerColor),
+	  m_stockfishDepth(std::clamp(stockfishDepth, 1, 20)),
+	  m_soundEnabled(soundEnabled),
+	  m_scene(scene)
 {
 	connect(m_scene, &ChessScene::squareClicked,
 			this, &GameController::onSquareClicked);
+
+	if (m_soundEnabled)
+	{
+		m_moveSound = new QSoundEffect(this);
+		m_moveSound->setSource(QUrl(QStringLiteral("qrc:/sound/castle.wav")));
+	}
 
 	QString engineError;
 	if (m_mode == GameMode::VsStockfish)
@@ -52,8 +66,7 @@ GameController::GameController(ChessScene *scene, QObject *parent, GameMode mode
 		catch (const std::exception &error)
 		{
 			m_engineAvailable = false;
-			engineError = tr("Stockfish error: %1")
-							  .arg(QString::fromStdString(error.what()));
+			engineError = tr("Stockfish error: %1").arg(QString::fromStdString(error.what()));
 		}
 	}
 	else
@@ -63,6 +76,7 @@ GameController::GameController(ChessScene *scene, QObject *parent, GameMode mode
 	refreshView();
 	if (!engineError.isEmpty())
 		emit statusChanged(engineError);
+	playEngineMoveIfNeeded();
 }
 
 ChessScene::Board GameController::snapshot() const
@@ -105,6 +119,7 @@ bool GameController::isClickAllowed(int row, int column)
 {
 	return row >= 0 && row < ChessScene::kBoardSize &&
 		   column >= 0 && column < ChessScene::kBoardSize &&
+		   (m_mode != GameMode::VsStockfish || m_game.getCurrentTurn() == m_playerColor) &&
 		   !isGameFinished() && !m_engineThinking && !m_moveAnimating;
 }
 
@@ -133,62 +148,66 @@ bool GameController::tryMoveSelected(const Position &clicked)
 	}
 
 	clearSelection();
+	playMoveSound();
 	m_moveAnimating = true;
 	m_scene->animateMove(from.getX(), from.getY(),
-						 clicked.getX(), clicked.getY(),
-						 [this]()
-						 {
-							 m_moveAnimating = false;
-							 refreshView();
-							 announceGameEndIfAny();
-							 playEngineMoveIfNeeded();
-						 });
+		clicked.getX(), clicked.getY(), [this]()
+		{
+			m_moveAnimating = false;
+			refreshView();
+			announceGameEndIfAny();
+			playEngineMoveIfNeeded();
+		});
 	return true;
 }
 
 void GameController::playEngineMoveIfNeeded()
 {
 	if (m_mode != GameMode::VsStockfish ||
+		m_game.getCurrentTurn() == m_playerColor ||
 		!m_engineAvailable ||
 		m_engineThinking ||
 		isGameFinished())
+	{
 		return;
+	}
 
 	// Block board clicks during the delay and engine calculation.
 	m_engineThinking = true;
 
 	QTimer::singleShot(500, this, [this]()
-					   {
+	{
 		try
 		{
 			StockfishEngine &engine = m_game.getStockfishEngine();
-			const Move move = engine.getBestMove(m_game.getFEN());
+			const Move move = engine.getBestMove(m_game.getFEN(), m_stockfishDepth);
 
-			m_game.makeMove(
-				move.getFrom(),
-				move.getTo(),
-				move.getPromotionType()
-			);
+			m_game.makeMove(move.getFrom(), move.getTo(), move.getPromotionType());
+			playMoveSound();
 
 			m_scene->animateMove(move.getFrom().getX(), move.getFrom().getY(),
-								 move.getTo().getX(), move.getTo().getY(),
-								 [this]()
-								 {
-									 m_engineThinking = false;
-									 refreshView();
-									 announceGameEndIfAny();
-								 });
+				move.getTo().getX(), move.getTo().getY(), [this]()
+				{
+					m_engineThinking = false;
+					refreshView();
+					announceGameEndIfAny();
+				});
 		}
 		catch (const std::exception &error)
 		{
 			m_engineThinking = false;
-			emit statusChanged(
-				tr("Stockfish error: %1")
-					.arg(QString::fromStdString(error.what()))
-			);
+			emit statusChanged(tr("Stockfish error: %1").arg(QString::fromStdString(error.what())));
 			return;
 		}
 	});
+}
+
+void GameController::playMoveSound() const
+{
+	if (m_moveSound == nullptr)
+		return;
+
+	m_moveSound->play();
 }
 
 void GameController::trySelect(const Position &clicked)

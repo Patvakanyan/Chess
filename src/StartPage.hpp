@@ -17,6 +17,7 @@ public:
 signals:
 	// Emitted when one of the mode buttons is clicked.
 	void modeSelected(GameMode mode);
+	void settingsRequested();
 
 private:
 	QPushButton *createModeButton(const QString &title, const QString &description);

@@ -26,7 +26,7 @@ public:
 	~ChessServer();
 
 	void startServer();
-	void stopServer();
+	void stopServer() noexcept;
 	ssize_t sendMessage(int clientSocket, const char *message, size_t messageSize);
 	ssize_t receiveLine(int clientSocket, char *buffer, size_t bufferSize);
 };
