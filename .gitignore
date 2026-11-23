@@ -32,6 +32,9 @@ CTestTestfile.cmake
 *.gcno
 *.gcov
 
+# Python test cache
+__pycache__/
+
 # OS/editor files
 .DS_Store
 *.swp

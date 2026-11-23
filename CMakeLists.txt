@@ -9,9 +9,17 @@ include(GNUInstallDirs)
 
 enable_testing()
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Multimedia)
+find_package(Qt6 6.4 QUIET COMPONENTS Widgets Multimedia)
+if (NOT Qt6_FOUND)
+    message(FATAL_ERROR
+        "Qt >= 6.4 with Widgets and Multimedia is required. "
+        "Run ./build.sh to install missing dependencies and build on supported Linux distributions. "
+        "For a custom Qt installation, set CMAKE_PREFIX_PATH to its installation prefix. "
+        "${Qt6_NOT_FOUND_MESSAGE}"
+    )
+endif()
 
-qt_standard_project_setup(REQUIRES 6.10)
+qt_standard_project_setup()
 
 add_subdirectory(Chess)
 add_subdirectory(server)

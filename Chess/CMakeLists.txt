@@ -13,6 +13,12 @@ if (STOCKFISH_EXECUTABLE)
 else()
     message(STATUS "Stockfish was not found; downloading and building it")
 
+    # Stockfish uses GNU Make even when this project uses the Ninja generator.
+    find_program(STOCKFISH_MAKE_EXECUTABLE NAMES gmake make)
+    if (NOT STOCKFISH_MAKE_EXECUTABLE)
+        message(FATAL_ERROR "GNU Make is required to build Stockfish. Run ./build.sh to install dependencies.")
+    endif()
+
     set(STOCKFISH_SOURCE_DIR "${CMAKE_BINARY_DIR}/stockfish-source")
     set(STOCKFISH_BUILT_EXECUTABLE "${STOCKFISH_SOURCE_DIR}/src/stockfish")
 
@@ -20,7 +26,7 @@ else()
         URL https://github.com/official-stockfish/Stockfish/archive/refs/tags/sf_17.1.tar.gz
         SOURCE_DIR "${STOCKFISH_SOURCE_DIR}"
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -C "<SOURCE_DIR>/src" -j2 build ARCH=x86-64
+        BUILD_COMMAND ${STOCKFISH_MAKE_EXECUTABLE} -C "<SOURCE_DIR>/src" -j2 build ARCH=x86-64
         INSTALL_COMMAND ""
         BUILD_BYPRODUCTS "${STOCKFISH_BUILT_EXECUTABLE}"
     )

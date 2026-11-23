@@ -19,7 +19,7 @@ For the engine-specific design and terminal usage, see the
 
 - CMake 3.16 or newer
 - A C++17-compatible compiler
-- Qt 6.10 or newer, including the Widgets and Multimedia modules
+- Qt 6.4 or newer, including the Widgets and Multimedia modules
 - GNU Make (required only when CMake needs to build the bundled Stockfish
   fallback)
 - A Stockfish executable on `PATH` is optional. If it is not found, CMake
@@ -46,7 +46,47 @@ sounds from Settings before starting a game.
 
 ## Build the GUI
 
-Run these commands from the repository root:
+On **Fedora**, **Debian/Ubuntu**, or **Arch Linux**, run this from the
+repository root:
+
+```bash
+./build.sh
+```
+
+The script checks the installed packages, automatically installs missing
+dependencies with the distribution's package manager, and builds the project.
+This includes the compiler, CMake, GNU Make, Qt Widgets, Qt Multimedia, and
+Qt's desktop platform plugins. Package dependencies supply the other system
+libraries. It asks for your `sudo` password only if packages need installing;
+run the build script as your normal user. Installing packages and downloading
+the Stockfish fallback require an internet connection.
+
+Use a distribution with Qt 6.4 or newer in its configured repositories, such
+as Ubuntu 24.04+ or Debian 12+. Older repositories will not provide a new
+enough Qt. Arch systems should already be up to date before installing packages.
+
+To install dependencies separately or preview the missing packages:
+
+```bash
+./scripts/install-dependencies.sh --dry-run
+./scripts/install-dependencies.sh
+```
+
+To use an existing/custom Qt installation, skip package installation and pass
+any needed CMake options:
+
+```bash
+./build.sh --skip-deps -DCMAKE_PREFIX_PATH=/path/to/Qt/6.x/gcc_64
+```
+
+`BUILD_DIR` changes the build directory and `JOBS` controls parallel compilation
+(default: `build` and `2`). For example:
+
+```bash
+BUILD_DIR=build/release JOBS=4 ./build.sh -DCMAKE_BUILD_TYPE=Release
+```
+
+To build manually after installing the requirements:
 
 ```bash
 cmake -S . -B build
@@ -97,6 +137,13 @@ and building:
 
 ```bash
 ctest --test-dir build --output-on-failure
+```
+
+The dependency installer also has tests that simulate package managers without
+installing system packages (Python 3 is needed only for these tests):
+
+```bash
+python3 -m unittest discover -s tests -v
 ```
 
 ## Project layout
