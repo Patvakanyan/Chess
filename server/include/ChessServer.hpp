@@ -1,11 +1,10 @@
 #pragma once
 
-#include <cstring>
-#include <iostream>
+#include "ClientConnection.hpp"
+
+#include <cstdint>
 #include <netinet/in.h>
-#include <stdexcept>
-#include <sys/socket.h>
-#include <unistd.h>
+#include <optional>
 
 class ChessServer
 {
@@ -14,8 +13,8 @@ private:
 
 	int port;
 	int serverSocket{-1};
-	int whiteSocket{-1};
-	int blackSocket{-1};
+	std::optional<ClientConnection> whiteClient;
+	std::optional<ClientConnection> blackClient;
 
 	void setupServer();
 	void waitForClients();
@@ -27,6 +26,4 @@ public:
 
 	void startServer();
 	void stopServer() noexcept;
-	ssize_t sendMessage(int clientSocket, const char *message, size_t messageSize);
-	ssize_t receiveLine(int clientSocket, char *buffer, size_t bufferSize);
 };

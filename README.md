@@ -105,6 +105,40 @@ Run it with:
 ./build/appchessGui_2
 ```
 
+## Run the network client and server
+
+The root build also creates a console server and client. Start the server in
+one terminal:
+
+```bash
+./build/server/chess_server
+```
+
+Then start a client in each of two other terminals:
+
+```bash
+./build/client/chess_client
+```
+
+Clients connect to `127.0.0.1:5555` by default. The first client plays White
+and waits for the second client, which plays Black. Enter moves such as
+`e2e4` when prompted, or `quit` to resign. Closing standard input also resigns
+when it is your turn. The server relays moves without checking chess legality.
+
+You can specify an IPv4 address and port:
+
+```bash
+./build/client/chess_client 127.0.0.1 5555
+```
+
+To build only the client independently:
+
+```bash
+cmake -S client -B client/build
+cmake --build client/build
+./client/build/chess_client
+```
+
 ## Build and run the terminal engine
 
 The engine can also be built independently:

@@ -3,18 +3,21 @@ cmake_minimum_required(VERSION 3.16)
 project(ChessServer LANGUAGES CXX)
 
 find_package(Threads REQUIRED)
+include(CTest)
 
 add_executable(chess_server
 	main.cpp
 	ChessServer.cpp
 	ClientConnection.cpp
 	GameSession.cpp
+	../network/Protocol.cpp
 )
 
 target_compile_features(chess_server PRIVATE cxx_std_17)
 
 target_include_directories(chess_server PRIVATE
 	"${CMAKE_CURRENT_SOURCE_DIR}/include"
+	"${CMAKE_CURRENT_SOURCE_DIR}/.."
 )
 
 target_link_libraries(chess_server PRIVATE
@@ -34,4 +37,19 @@ else()
 		-Wpedantic
 		-Wpedantic
 	)
+endif()
+
+if(BUILD_TESTING)
+	add_executable(client_connection_tests
+		tests/ClientConnection_test.cpp
+		ClientConnection.cpp
+		../network/Protocol.cpp
+	)
+	target_compile_features(client_connection_tests PRIVATE cxx_std_17)
+	target_include_directories(client_connection_tests PRIVATE
+		"${CMAKE_CURRENT_SOURCE_DIR}/include"
+		"${CMAKE_CURRENT_SOURCE_DIR}/.."
+	)
+	add_test(NAME client_connection_tests COMMAND client_connection_tests)
+	set_tests_properties(client_connection_tests PROPERTIES TIMEOUT 15)
 endif()

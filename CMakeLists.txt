@@ -23,6 +23,7 @@ qt_standard_project_setup()
 
 add_subdirectory(Chess)
 add_subdirectory(server)
+add_subdirectory(client)
 
 if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/importedcontent/CMakeLists.txt")
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/importedcontent)
